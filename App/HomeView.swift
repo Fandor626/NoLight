@@ -11,18 +11,19 @@ struct HomeView: View {
                     VStack(spacing: 12) {
                         DataStatusBanners(state: state, now: context.date)
 
-                        if state.selected.isEmpty {
+                        if state.places.isEmpty {
                             EmptyStateView { showingPicker = true }
                         } else {
-                            ForEach(state.selected) { subgroup in
-                                NavigationLink(value: subgroup) {
-                                    SubgroupCardView(
+                            ForEach(state.places) { place in
+                                NavigationLink(value: place) {
+                                    PlaceCardView(
+                                        name: place.name,
                                         presentation: SubgroupPresentation(snapshot: state.snapshot,
-                                                                           subgroup: subgroup, now: context.date))
+                                                                           subgroup: place.subgroup, now: context.date))
                                 }
                                 .buttonStyle(.plain)
                                 .contextMenu {
-                                    Button(role: .destructive) { state.remove(subgroup) } label: {
+                                    Button(role: .destructive) { state.removePlace(place) } label: {
                                         Label("Видалити", systemImage: "trash")
                                     }
                                 }
@@ -35,11 +36,11 @@ struct HomeView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("Світло")
-            .navigationDestination(for: Subgroup.self) { SubgroupDetailView(subgroup: $0) }
+            .navigationDestination(for: Place.self) { SubgroupDetailView(subgroup: $0.subgroup) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingPicker = true } label: { Image(systemName: "plus") }
-                        .accessibilityLabel("Додати підчергу")
+                        .accessibilityLabel("Додати місце")
                 }
             }
             .sheet(isPresented: $showingPicker) { SubgroupPickerView() }
@@ -53,17 +54,19 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "bolt.slash.fill").font(.system(size: 40)).foregroundStyle(.secondary)
-            Text("Немає обраних підчерг").font(.headline)
-            Text("Додайте свою підчергу, щоб бачити графік відключень і користуватись віджетом.")
+            Text("Немає збережених місць").font(.headline)
+            Text("Додайте місце (наприклад, Дім чи Роботу), щоб бачити його графік відключень.")
                 .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            Button("Додати підчергу", action: action).buttonStyle(.borderedProminent)
+            Button("Додати місце", action: action).buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity)
         .padding(32)
     }
 }
 
-struct SubgroupCardView: View {
+/// Картка місця: назва, стан, найближча зміна, шкала 24 год і свіжість даних.
+struct PlaceCardView: View {
+    let name: String
     let presentation: SubgroupPresentation
 
     var body: some View {
@@ -71,6 +74,7 @@ struct SubgroupCardView: View {
             HStack(spacing: 12) {
                 SubgroupBadge(text: presentation.subgroup.id)
                 VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.subheadline.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
                     Text(presentation.headline)
                         .font(.headline)
                         .foregroundStyle(presentation.status.state.textColor)

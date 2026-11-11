@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// Тимчасовий спосіб додати місце: вибір підчерги створює місце «Підчерга X.Y».
+/// Замінюється формою «Додати місце» в NOL-11.
 struct SubgroupPickerView: View {
     @Environment(AppState.self) private var state
     @Environment(\.dismiss) private var dismiss
@@ -10,12 +12,12 @@ struct SubgroupPickerView: View {
                 ForEach(1...6, id: \.self) { queue in
                     Section("Черга \(queue)") {
                         ForEach(Subgroup.all.filter { $0.queue == queue }) { subgroup in
-                            Button { state.toggle(subgroup) } label: {
+                            Button { state.togglePlace(for: subgroup) } label: {
                                 HStack(spacing: 12) {
                                     SubgroupBadge(text: subgroup.id, compact: true)
                                     Text("Підчерга \(subgroup.id)")
                                     Spacer()
-                                    if state.isSelected(subgroup) {
+                                    if state.hasPlace(with: subgroup) {
                                         Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor)
                                     } else {
                                         Image(systemName: "circle").foregroundStyle(.tertiary)
@@ -23,12 +25,12 @@ struct SubgroupPickerView: View {
                                 }
                             }
                             .foregroundStyle(.primary)
-                            .accessibilityAddTraits(state.isSelected(subgroup) ? .isSelected : [])
+                            .accessibilityAddTraits(state.hasPlace(with: subgroup) ? .isSelected : [])
                         }
                     }
                 }
             }
-            .navigationTitle("Підчерги")
+            .navigationTitle("Додати місце")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Готово") { dismiss() } } }
         }

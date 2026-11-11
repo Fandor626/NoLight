@@ -5,23 +5,26 @@ import WidgetKit
 @MainActor
 @Observable
 final class AppState {
-    private(set) var selected: [Subgroup]
+    /// Збережені місця в порядку показу.
+    private(set) var places: [Place]
     private(set) var snapshot: ScheduleSnapshot?
     private(set) var isRefreshing = false
     private(set) var lastError: ScheduleError?
 
     @ObservationIgnored private let repository: ScheduleRepository
-    @ObservationIgnored private let settings: SettingsStore
+    @ObservationIgnored private let placeStore: PlaceStore
 
-    init(repository: ScheduleRepository, settings: SettingsStore) {
+    /// `settings` — сховище v1 (`selectedSubgroups.v1`); читається лише для одноразової міграції.
+    init(repository: ScheduleRepository, settings: SettingsStore, placeStore: PlaceStore) {
         self.repository = repository
-        self.settings = settings
-        self.selected = settings.selectedSubgroups
+        self.placeStore = placeStore
+        placeStore.migrateFromV1IfNeeded(v1Subgroups: settings.selectedSubgroups)
+        self.places = placeStore.places
     }
 
     static func live() -> AppState {
         let repository = ScheduleRepository.live(onUpdate: { WidgetCenter.shared.reloadAllTimelines() })
-        return AppState(repository: repository, settings: .shared)
+        return AppState(repository: repository, settings: .shared, placeStore: .shared)
     }
 
     /// Спочатку миттєво показуємо кеш, потім оновлюємо з мережі.
@@ -47,18 +50,30 @@ final class AppState {
         }
     }
 
-    func isSelected(_ subgroup: Subgroup) -> Bool { selected.contains(subgroup) }
-    func toggle(_ subgroup: Subgroup) { isSelected(subgroup) ? remove(subgroup) : add(subgroup) }
-
-    func add(_ subgroup: Subgroup) {
-        guard !isSelected(subgroup) else { return }
-        selected.append(subgroup)
-        selected.sort()
-        settings.selectedSubgroups = selected
+    func addPlace(_ place: Place) {
+        places.append(place)
+        save()
     }
 
-    func remove(_ subgroup: Subgroup) {
-        selected.removeAll { $0 == subgroup }
-        settings.selectedSubgroups = selected
+    func removePlace(_ place: Place) {
+        places.removeAll { $0.id == place.id }
+        save()
+    }
+
+    // Тимчасове додавання за підчергою (до форми «Додати місце», NOL-11).
+    func hasPlace(with subgroup: Subgroup) -> Bool { places.contains { $0.subgroup == subgroup } }
+
+    func togglePlace(for subgroup: Subgroup) {
+        if hasPlace(with: subgroup) {
+            places.removeAll { $0.subgroup == subgroup }
+            save()
+        } else {
+            addPlace(Place(name: Place.defaultName(for: subgroup), subgroup: subgroup))
+        }
+    }
+
+    private func save() {
+        placeStore.places = places
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
