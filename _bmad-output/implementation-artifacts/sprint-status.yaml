@@ -14,8 +14,8 @@ tracking_system: jira
 story_location: _bmad-output/implementation-artifacts
 
 development_status:
-  epic-1: backlog  # NOL-1
-  1-1-home-screen-places-v1-migration: backlog  # NOL-10
+  epic-1: in-progress  # NOL-1
+  1-1-home-screen-places-v1-migration: review  # NOL-10
   1-2-add-a-place: backlog  # NOL-11
   1-3-manage-places: backlog  # NOL-12
   1-4-place-details-today-tomorrow: backlog  # NOL-13
