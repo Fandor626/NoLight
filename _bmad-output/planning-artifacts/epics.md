@@ -880,7 +880,7 @@ As Bohdan, I want the version to change only when app code changes, so that docu
 
 #### Technical notes
 - Implemented: `scripts/set-version.sh` counts `git rev-list --count HEAD -- App Shared Widget project.yml VERSION scripts/set-version.sh`; version = `VERSION`.count.
-- Verified on git history (docs commits keep the number, code commits bump it). **Remaining:** check in Xcode that «Налаштування → Версія» shows «1.0.4 (збірка 4)» on branch `chore/rename-to-nolight`.
+- Verified on git history (docs commits keep the number, code commits bump it). **Remaining:** check in Xcode that «Налаштування → Версія» shows «1.0.4 (збірка 4)» on `main`.
 
 #### Prototype
 N/A — no UI
@@ -901,7 +901,7 @@ As Bohdan, I want the app and project to be called NoLight like the repository, 
 - **AC3.** Data-source names and URLs (cherkasyoblenergo.com) are unchanged.
 
 #### Technical notes
-- Done on branch `chore/rename-to-nolight` (commit d96eab9). Remaining: push, PR into `main`, `xcodegen generate`, choose Team for both targets so the new App Group is registered.
+- Merged into `main` via PR #1 and #2 (commit d96eab9). Remaining: `xcodegen generate`, choose Team for both targets so the new App Group is registered, and check the build in Xcode.
 - New bundle ID = new app on the device: the old «Світло Черкаси» must be removed manually and widgets re-added.
 
 #### Prototype

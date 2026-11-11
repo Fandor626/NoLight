@@ -4,7 +4,8 @@
 # Story statuses: backlog -> ready-for-dev -> in-progress -> review -> done
 # Epic statuses: backlog -> in-progress -> done. Retrospectives: optional <-> done.
 # 8-3 review: script logic verified on git history, not yet in Xcode.
-# 8-4 review: rename lives on branch chore/rename-to-nolight (not merged).
+# Git workflow: 1 task = 1 branch from main = 1 pull request.
+# 8-4 review: rename merged into main (PR #1, #2); waiting for the Xcode build check.
 
 generated: 2026-11-11
 last_updated: 2026-11-11
