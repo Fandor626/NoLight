@@ -29,15 +29,15 @@ Estimates are set by Bohdan in Jira and are not stored here.
 
 | Sprint | Goal | Stories |
 |---|---|---|
-| Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4) |
-| Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-19 (3.1), NOL-20 (3.2) |
-| Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
-| Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
-| Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
-| Sprint 6 | Look and brand | NOL-32 (7.1), NOL-33 (7.2), NOL-34 (7.3), NOL-35 (8.1), NOL-36 (8.2) |
-| Sprint 7 | Optional: Live Activity | NOL-39 (9.1) |
+| NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4) |
+| NOL Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-19 (3.1), NOL-20 (3.2) |
+| NOL Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
+| NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
+| NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
+| NOL Sprint 6 | Look and brand | NOL-32 (7.1), NOL-33 (7.2), NOL-34 (7.3), NOL-35 (8.1), NOL-36 (8.2) |
+| NOL Sprint 7 | Optional: Live Activity | NOL-39 (9.1) |
 
-Order inside a sprint follows dependencies (top to bottom).
+Order inside a sprint follows dependencies (top to bottom). Jira sprint IDs on board 56: NOL Sprint 1 = 1634 … NOL Sprint 7 = 1640.
 
 ---
 
