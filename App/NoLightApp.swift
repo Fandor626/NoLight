@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 @MainActor
-struct CherkasyLightApp: App {
+struct NoLightApp: App {
     @State private var state = AppState.live()
     @Environment(\.scenePhase) private var scenePhase
 

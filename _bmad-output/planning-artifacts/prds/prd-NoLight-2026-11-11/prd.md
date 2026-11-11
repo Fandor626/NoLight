@@ -1,11 +1,11 @@
 ---
-title: CherkasyLight
+title: NoLight
 status: final
 created: 2026-11-11
 updated: 2026-11-11
 ---
 
-# PRD: CherkasyLight
+# PRD: NoLight
 *Робоча назва — підтвердити.*
 
 ## 0. Призначення документа

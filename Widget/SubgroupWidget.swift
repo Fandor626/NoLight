@@ -51,6 +51,6 @@ struct SubgroupScheduleWidget: Widget {
 }
 
 @main
-struct CherkasyLightWidgetBundle: WidgetBundle {
+struct NoLightWidgetBundle: WidgetBundle {
     var body: some Widget { SubgroupScheduleWidget() }
 }
