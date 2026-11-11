@@ -88,3 +88,51 @@ final class PlaceStoreTests: XCTestCase {
         XCTAssertEqual(try JSONDecoder().decode(Place.self, from: data), place)
     }
 }
+
+final class PlaceDraftTests: XCTestCase {
+    func testEmptyOrBlankNameIsInvalid() {
+        var draft = PlaceDraft()
+        XCTAssertFalse(draft.isValid)
+        draft.name = "   \n"
+        XCTAssertFalse(draft.isValid)
+        XCTAssertNil(draft.makePlace())
+    }
+
+    func testValidDraftMakesTrimmedPlace() {
+        var draft = PlaceDraft()
+        draft.name = "  Робота "
+        draft.queue = 4
+        draft.sub = 2
+        let place = draft.makePlace()
+        XCTAssertEqual(place?.name, "Робота")
+        XCTAssertEqual(place?.subgroup, Subgroup(queue: 4, sub: 2))
+        XCTAssertEqual(place?.region, .cherkasy)
+        XCTAssertEqual(place?.source, .oblenergoSite)
+    }
+
+    func testTooLongNameIsInvalid() {
+        var draft = PlaceDraft()
+        draft.name = String(repeating: "я", count: PlaceDraft.maxNameLength + 1)
+        XCTAssertFalse(draft.isValid)
+    }
+
+    func testOutOfRangeSubgroupIsInvalid() {
+        var draft = PlaceDraft()
+        draft.name = "Дім"
+        draft.queue = 7
+        XCTAssertFalse(draft.isValid)
+    }
+
+    func testOnlyCherkasyIsSelectableForNow() {
+        XCTAssertEqual(Region.selectable, [.cherkasy])
+        XCTAssertTrue(Region.cherkasy.hasScheduleData)
+    }
+
+    func testSameSubgroupCanBeUsedByTwoPlaces() {
+        var a = PlaceDraft(); a.name = "Дім"; a.queue = 3; a.sub = 2
+        var b = PlaceDraft(); b.name = "Батьки"; b.queue = 3; b.sub = 2
+        let pa = a.makePlace(), pb = b.makePlace()
+        XCTAssertNotNil(pa); XCTAssertNotNil(pb)
+        XCTAssertNotEqual(pa?.id, pb?.id)
+    }
+}

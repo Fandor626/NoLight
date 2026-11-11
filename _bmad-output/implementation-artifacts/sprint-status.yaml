@@ -1,7 +1,7 @@
 # generated: 2026-11-11
 # project: NoLight
 # tracking_system: jira (project NOL), mirrored in _bmad-output/planning-artifacts/epics.md
-# Story statuses: backlog -> ready-for-dev -> in-progress -> review -> done
+# Story statuses: backlog -> ready-for-dev -> in-progress -> review -> ready-for-testing (merged into main) -> done (set only by Bohdan)
 # Epic statuses: backlog -> in-progress -> done. Retrospectives: optional <-> done.
 # 8-3 review: script logic verified on git history, not yet in Xcode.
 # Git workflow: 1 task = 1 branch from main = 1 pull request.
@@ -16,8 +16,8 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   epic-1: in-progress  # NOL-1
-  1-1-home-screen-places-v1-migration: review  # NOL-10
-  1-2-add-a-place: backlog  # NOL-11
+  1-1-home-screen-places-v1-migration: ready-for-testing  # NOL-10
+  1-2-add-a-place: review  # NOL-11
   1-3-manage-places: backlog  # NOL-12
   1-4-place-details-today-tomorrow: backlog  # NOL-13
   1-5-14-day-history: backlog  # NOL-14
@@ -64,8 +64,8 @@ development_status:
   epic-8: in-progress  # NOL-8
   8-1-logo-and-app-icon: backlog  # NOL-35
   8-2-launch-screen-and-widget-icon: backlog  # NOL-36
-  8-3-version-only-on-code-change: review  # NOL-37
-  8-4-rename-to-nolight: review  # NOL-38
+  8-3-version-only-on-code-change: ready-for-testing  # NOL-37
+  8-4-rename-to-nolight: ready-for-testing  # NOL-38
   epic-8-retrospective: optional
 
   epic-9: backlog  # NOL-9

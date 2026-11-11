@@ -60,18 +60,6 @@ final class AppState {
         save()
     }
 
-    // Тимчасове додавання за підчергою (до форми «Додати місце», NOL-11).
-    func hasPlace(with subgroup: Subgroup) -> Bool { places.contains { $0.subgroup == subgroup } }
-
-    func togglePlace(for subgroup: Subgroup) {
-        if hasPlace(with: subgroup) {
-            places.removeAll { $0.subgroup == subgroup }
-            save()
-        } else {
-            addPlace(Place(name: Place.defaultName(for: subgroup), subgroup: subgroup))
-        }
-    }
-
     private func save() {
         placeStore.places = places
         WidgetCenter.shared.reloadAllTimelines()
