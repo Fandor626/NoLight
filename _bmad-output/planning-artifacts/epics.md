@@ -29,8 +29,8 @@ Estimates are set by Bohdan in Jira and are not stored here.
 
 | Sprint | Goal | Stories |
 |---|---|---|
-| NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4) |
-| NOL Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-40 (6.3), NOL-19 (3.1), NOL-20 (3.2) |
+| NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4), NOL-40 (6.3) |
+| NOL Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-19 (3.1), NOL-20 (3.2) |
 | NOL Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
 | NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
 | NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
@@ -653,7 +653,7 @@ TBD — Claude artifact prototype
 ---
 
 ## NOL-6: Epic 6: Widgets for my places
-**Type:** Epic · **Sprint:** Sprint 2 · **Status:** To Do · **FRs:** FR15
+**Type:** Epic · **Sprint:** Sprint 1–2 · **Status:** To Do · **FRs:** FR15
 
 #### Description
 Widgets (small, medium, large) show a saved place instead of a fixed subgroup, with «застаріло» / error states and a refresh button.
@@ -724,7 +724,7 @@ TBD — Claude artifact prototype
 
 
 ### NOL-40: 6.3 Widgets mirror place cards
-**Type:** Story · **Epic:** NOL-6 · **Sprint:** Sprint 2 · **Status:** To Do
+**Type:** Story · **Epic:** NOL-6 · **Sprint:** Sprint 1 · **Status:** To Do
 
 #### Description
 As Bohdan, I want my widgets to show the same place cards as the app («Дім», «Робота», …), so that the app and the home screen are consistent and I recognise each place instantly.
