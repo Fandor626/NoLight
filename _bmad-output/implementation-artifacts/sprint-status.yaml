@@ -8,6 +8,8 @@
 # Статуси історій: backlog -> ready-for-dev -> in-progress -> review -> done
 # Епіки: backlog -> in-progress -> done. Ретроспективи: optional <-> done.
 # Story 8-3 у review: логіку скрипта перевірено в терміналі, але не в Xcode.
+# Story 8-4 у review: перейменування в NoLight у гілці chore/rename-to-nolight.
+# Jira: проєкт NOL (https://rarikovi45690.atlassian.net), епіки NOL-1..NOL-9, історії NOL-10..NOL-39.
 
 generated: 2026-11-11 13:52
 last_updated: 2026-11-11 13:52
@@ -67,6 +69,7 @@ development_status:
   8-1-lohotyp-ta-ikonka-zastosunku: backlog
   8-2-zastavka-zapusku-ta-ikonka-vidzheta: backlog
   8-3-versionuvannya-lyshe-za-zminoyu-kodu: review
+  8-4-pereymenuvannya-v-nolight: review
   epic-8-retrospective: optional
 
   epic-9: backlog
