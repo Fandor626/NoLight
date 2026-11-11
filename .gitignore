@@ -2,3 +2,7 @@ xcuserdata/
 DerivedData/
 .DS_Store
 *.xcodeproj
+
+# BMad agent skills and Claude Code local config (installed locally, not project code)
+.claude/
+.agents/
