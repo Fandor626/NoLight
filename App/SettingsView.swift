@@ -1,5 +1,15 @@
 import SwiftUI
 
+/// Версія зі збірки: «1.0.14 (збірка 14)». Значення виставляє scripts/set-version.sh (кількість комітів у git).
+enum AppVersion {
+    static var display: String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(short) (збірка \(build))"
+    }
+}
+
 struct SettingsView: View {
     @Environment(AppState.self) private var state
 
@@ -42,7 +52,7 @@ struct SettingsView: View {
                 }
 
                 Section("Про застосунок") {
-                    LabeledContent("Версія", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")
+                    LabeledContent("Версія", value: AppVersion.display)
                     Text("Неофіційний застосунок, не пов’язаний з АТ «Черкасиобленерго». Завжди звіряйтеся з офіційними повідомленнями.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }

@@ -13,6 +13,7 @@ settings:
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
     TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO   # скрипт версії змінює Info.plist зібраного продукту
     # ↓↓↓ ЗМІНІТЬ ЦІ ДВА ЗНАЧЕННЯ НА СВОЇ (єдине місце, де вони задаються) ↓↓↓
     BUNDLE_PREFIX: com.bohdanol
     APP_GROUP_ID: group.com.bohdanol.CherkasyLight
@@ -24,6 +25,10 @@ targets:
     sources: [App, Shared]
     dependencies:
       - target: CherkasyLightWidget
+    postBuildScripts:
+      - name: Set version from git
+        script: '"${SRCROOT}/scripts/set-version.sh"'
+        basedOnDependencyAnalysis: false
     entitlements:
       path: App/CherkasyLight.entitlements
       properties:
@@ -50,6 +55,10 @@ targets:
     type: app-extension
     platform: iOS
     sources: [Widget, Shared]
+    postBuildScripts:
+      - name: Set version from git
+        script: '"${SRCROOT}/scripts/set-version.sh"'
+        basedOnDependencyAnalysis: false
     entitlements:
       path: Widget/CherkasyLightWidget.entitlements
       properties:
