@@ -30,7 +30,7 @@ Estimates are set by Bohdan in Jira and are not stored here.
 | Sprint | Goal | Stories |
 |---|---|---|
 | NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4) |
-| NOL Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-19 (3.1), NOL-20 (3.2) |
+| NOL Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-40 (6.3), NOL-19 (3.1), NOL-20 (3.2) |
 | NOL Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
 | NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
 | NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
@@ -663,7 +663,7 @@ Widgets (small, medium, large) show a saved place instead of a fixed subgroup, w
 - Stale data and errors are visible; the refresh button works.
 
 #### Acceptance criteria
-- **AC1.** All stories NOL-30…NOL-31 are done.
+- **AC1.** All stories NOL-30, NOL-31 and NOL-40 are done.
 - **AC2.** Existing v1 widgets keep working after the update.
 
 #### Technical notes
@@ -718,6 +718,50 @@ As Bohdan, I want the widget to show «застаріло» and errors, and a bu
 #### Technical notes
 - Mostly exists in v1 (`RefreshScheduleIntent`, `StaleWarningLabel`); verify per-place after NOL-30 and the 1-hour threshold from NOL-16 (`AppConfig.staleAfter`).
 - Depends on: NOL-30.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+
+### NOL-40: 6.3 Widgets mirror place cards
+**Type:** Story · **Epic:** NOL-6 · **Sprint:** Sprint 2 · **Status:** To Do
+
+#### Description
+As Bohdan, I want my widgets to show the same place cards as the app («Дім», «Робота», …), so that the app and the home screen are consistent and I recognise each place instantly.
+
+#### Expected behavior
+- A place widget looks like that place's card in the app: same place name, subgroup badge, state headline, next change, 24-hour timeline with a now-marker, and freshness label — adapted to small / medium / large sizes.
+- The widget uses exactly the same texts, colors and states as the app card (e.g. «Світло є», «Світла немає», «Даних ще немає», «Дані можуть бути застарілими»). There is never a state that the app shows differently.
+- Renaming, deleting or changing a place in the app is reflected in its widgets right away.
+- A new **«Мої місця» (My places)** widget shows several place cards in the app's order: medium = first 2 places, large = first 4. Tapping a card opens that place in the app.
+- Tapping a single-place widget opens that place's details in the app.
+
+#### Flows
+1. Add widget → choose «Місце» (one place) or «Мої місця» (list) in the widget gallery.
+2. «Місце»: «Змінити віджет» → pick a place from the same list as in the app (same names and order, NOL-30).
+3. App change (rename / reorder / delete / colors) → `WidgetCenter.reloadAllTimelines()` → widgets redraw with the same card content.
+4. Tap a card in a widget → app opens on `PlaceDetailView` for that place (deep link `nolight://place/{id}`).
+
+#### Acceptance criteria
+- **AC1.** Given a place «Робота» with subgroup 4.2, When I add a place widget for it, Then the widget shows «Робота», badge 4.2, the same state headline and next change as the app card, the timeline with a now-marker and the freshness label.
+- **AC2.** Given the same moment and data, Then the app card and the widget show identical state, next-change text and freshness (no divergent wording).
+- **AC3.** Given I rename «Робота» to «Офіс» in the app, Then the widget shows «Офіс» after its reload, without reconfiguring.
+- **AC4.** Given a «Мої місця» widget, Then medium shows the first 2 places and large the first 4, in the app's order; reordering in the app changes the widget order.
+- **AC5.** Given more places than fit, Then the widget shows «+N» (e.g. «+2 місця») instead of cutting cards.
+- **AC6.** Given no places, Then «Мої місця» shows «Додайте місце в застосунку» (Add a place in the app) and opens the app on tap.
+- **AC7.** Given I tap a place card in any widget, Then the app opens that place's details.
+- **AC8.** Given no data or expired data, Then widgets show «Невідомо»-type states exactly like the app, never «Світло є».
+
+#### Technical notes
+- Today the app card (`PlaceCardView` in `App/HomeView.swift`) and the widgets (`SmallWidgetView` / `MediumWidgetView` / `LargeWidgetView` in `Widget/SubgroupWidgetView.swift`) are separate layouts, and widgets show only the subgroup, not the place name → they drift.
+- Move the card into `Shared/UI/PlaceCardContent.swift` (compiled into App and Widget) with a `style` (`.app`, `.widgetSmall`, `.widgetMedium`, `.widgetLarge`) that only changes sizes/what fits; both use `SubgroupPresentation` for texts.
+- «Мої місця» = a second widget kind in `NoLightWidgetBundle` with a `StaticConfiguration`, reading `PlaceStore.shared.places` from the App Group.
+- Deep link: `widgetURL` / `Link` with `nolight://place/{uuid}`; register URL scheme `nolight` in `project.yml` (`CFBundleURLTypes`); `HomeView` handles `.onOpenURL` by pushing `PlaceDetailView`.
+- Places are already shared through the App Group (`PlaceStore`, NOL-10); `AppState.save()` already reloads widget timelines.
+- iOS does not let an app add a widget to the home screen programmatically; adding stays manual through the widget gallery.
+- **Open question:** should the large «Мої місця» widget show tomorrow too, or only today's timelines?
+- Colors follow NOL-32 automatically once the card is shared.
+- Depends on: NOL-30 (place selection in a widget), NOL-31 (widget states).
 
 #### Prototype
 TBD — Claude artifact prototype
