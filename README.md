@@ -1,16 +1,16 @@
-# Світло Черкаси — iOS-застосунок і віджети
+# NoLight — iOS-застосунок і віджети
 
 Графіки погодинних відключень (ГПВ) для підчерг 1.1–6.2 з офіційного сайту АТ «Черкасиобленерго».
 
 ## Збірка (потрібні macOS + Xcode 15+)
 1. `brew install xcodegen`
-2. У `project.yml` змініть **BUNDLE_PREFIX** та **APP_GROUP_ID** на свої (напр. `com.ivan` / `group.com.ivan.CherkasyLight`).
-3. `cd CherkasyLight && xcodegen generate && open CherkasyLight.xcodeproj`
-4. Xcode → Settings → Accounts: додайте Apple ID. У Signing & Capabilities для **обох** таргетів (CherkasyLight, CherkasyLightWidget) оберіть свою Team.
+2. У `project.yml` змініть **BUNDLE_PREFIX** та **APP_GROUP_ID** на свої (напр. `com.ivan` / `group.com.ivan.NoLight`).
+3. `cd NoLight && xcodegen generate && open NoLight.xcodeproj`
+4. Xcode → Settings → Accounts: додайте Apple ID. У Signing & Capabilities для **обох** таргетів (NoLight, NoLightWidget) оберіть свою Team.
    Capability **App Groups** з вашим APP_GROUP_ID має бути в обох (xcodegen додає entitlements, Xcode зареєструє групу автоматично).
-5. Підключіть iPhone, оберіть його, схема CherkasyLight, ⌘R. На iPhone: Налаштування → Загальні → VPN і керування пристроєм → довіряти розробнику (і режим розробника).
-6. Тести: ⌘U (таргет CherkasyLightTests, живий сайт не потрібен).
-7. Віджет: довге натискання на домашньому екрані → «+» → «Світло Черкаси»; «Змінити віджет» → оберіть підчергу.
+5. Підключіть iPhone, оберіть його, схема NoLight, ⌘R. На iPhone: Налаштування → Загальні → VPN і керування пристроєм → довіряти розробнику (і режим розробника).
+6. Тести: ⌘U (таргет NoLightTests, живий сайт не потрібен).
+7. Віджет: довге натискання на домашньому екрані → «+» → «NoLight»; «Змінити віджет» → оберіть підчергу.
 
 ## Джерело даних
 Окремого API на сайті знайдено не було. Щоденні графіки публікуються як текстові новини

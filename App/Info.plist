@@ -11,7 +11,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>uk</string>
 	<key>CFBundleDisplayName</key>
-	<string>Світло Черкаси</string>
+	<string>NoLight</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

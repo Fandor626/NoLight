@@ -11,7 +11,7 @@ enum AppConfig {
     /// Після цього часу збережені дані більше не показуються як актуальні.
     static let expiredAfter: TimeInterval = 24 * 3600
 
-    static let fallbackAppGroupID = "group.com.example.CherkasyLight"
+    static let fallbackAppGroupID = "group.com.example.NoLight"
 
     static var appGroupID: String {
         (Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String) ?? fallbackAppGroupID
