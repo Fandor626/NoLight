@@ -18,7 +18,7 @@ development_status:
   epic-1: in-progress  # NOL-1
   1-1-home-screen-places-v1-migration: ready-for-testing  # NOL-10
   1-2-add-a-place: review  # NOL-11
-  1-3-manage-places: backlog  # NOL-12
+  1-3-manage-places: review  # NOL-12
   1-4-place-details-today-tomorrow: backlog  # NOL-13
   1-5-14-day-history: backlog  # NOL-14
   epic-1-retrospective: optional

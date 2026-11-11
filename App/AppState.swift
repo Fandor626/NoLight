@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 import WidgetKit
 
 @MainActor
@@ -55,8 +56,24 @@ final class AppState {
         save()
     }
 
+    /// Єдина точка видалення місця. Заплановані сповіщення місця скасовуватимуться тут (NOL-21).
     func removePlace(_ place: Place) {
         places.removeAll { $0.id == place.id }
+        save()
+    }
+
+    /// Повертає false, якщо назва порожня або задовга.
+    @discardableResult
+    func renamePlace(_ place: Place, to newName: String) -> Bool {
+        guard let name = Place.normalizedName(newName),
+              let index = places.firstIndex(where: { $0.id == place.id }) else { return false }
+        places[index].name = name
+        save()
+        return true
+    }
+
+    func movePlaces(from source: IndexSet, to destination: Int) {
+        places.move(fromOffsets: source, toOffset: destination)
         save()
     }
 
