@@ -2,637 +2,947 @@
 stepsCompleted: [1, 2, 3, 4]
 inputDocuments:
   - _bmad-output/planning-artifacts/prds/prd-NoLight-2026-11-11/prd.md
+format: nolight-task-format (Jira-synced, project NOL)
+jira: https://rarikovi45690.atlassian.net/jira/software/projects/NOL/boards/56
 ---
 
 # NoLight - Epic Breakdown
 
 ## Overview
 
-Розбиття вимог PRD на епіки та історії. Architecture-документа й окремої UX-специфікації немає: технічний контекст береться з наявного коду v1 (SwiftUI, WidgetKit, App Intents, App Group, iOS 17+), а поведінка екранів описується в критеріях приймання.
-
-## Requirements Inventory
-
-### Functional Requirements
-
-FR1: Керування місцями: додавати, перейменовувати, змінювати порядок, видаляти; кількість необмежена; видалення скасовує сповіщення; планування лише найближчих сповіщень через ліміт iOS у 64.
-FR2: Каскадний вибір область → черга → підчерга; для області без даних — пояснення.
-FR3: Картка місця: стан, найближча зміна, 24-годинна шкала з маркером, свіжість і джерело; «невідомо» замість хибного «є світло».
-FR4: Деталі місця: сьогодні, завтра (за наявності) та попередні дні (історія до 14 днів).
-FR5: Перегляд без збереження (режим подорожі).
-FR6: Стан на час приїзду (час або тривалість поїздки), найближча зміна після нього; перехід через північ.
-FR7: Джерела за областями: Черкаси — сайт за замовчуванням з можливістю вибрати API; інші області — API.
-FR8: Екран порівняння джерел для Черкас: два графіки поряд, різниця, час оновлення, вибір основного джерела.
-FR9: Прозорість: позначка джерела, «неофіційне» для API, застаріло після 1 години, протерміновано після 24 годин, офлайн-кеш, помилка не стирає кеш.
-FR10: Статистика годин зі світлом і без: загалом, ніч, день; сьогодні, попередні дні, завтра.
-FR11: Налаштування меж ночі (за замовчуванням 00:00–06:00), підтримка діапазону через північ; дні без даних не рахуються.
-FR12: Попередження перед відключенням (час налаштовується, окремо для місця), локальні сповіщення.
-FR13: Попередження перед поверненням світла (налаштовується окремо).
-FR14: Сповіщення про зміну графіка із підсумком і історією змін; перепланування сповіщень після змін.
-FR15: Віджети малий/середній/великий з вибором місця та кнопкою оновлення; стани «застаріло» і «помилка».
-FR16: Live Activity / Lock Screen з відліком до наступної зміни (необов'язкова, після MVP).
-FR17: Режим оновлення: ручне або автоматичне кожні N хвилин/годин (мінімум 15 хв).
-FR18: Фонове оновлення з мінімальним інтервалом з FR17; у налаштуваннях пояснено, що iOS не гарантує інтервал.
-FR20: Кольори «є світло»/«немає світла»: color picker і пресети (включно з варіантами для дальтоніків), скидання до стандартних.
-FR21: Логотип, іконка застосунку, заставка запуску.
-FR22: Версіонування: номер змінюється лише для пушів, що змінюють код застосунку; версія показується в налаштуваннях.
-
-### NonFunctional Requirements
-
-NFR1: Усі часи рахуються за Europe/Kyiv з коректним переходом літній/зимовий час.
-NFR2: Весь інтерфейс українською.
-NFR3: Дані кешуються локально; застосунок працює офлайн із позначкою свіжості.
-NFR4: Сповіщення перед відключенням і поверненням світла приходять у межах ±1 хв від налаштованого часу (SM-2).
-NFR5: Жодних облікових записів, аналітики чи власного сервера; місця зберігаються лише локально.
-NFR6: Дані без джерела ніколи не відображаються як «є світло».
-
-### Additional Requirements
-
-- База: існуючий код v1 (xcodegen, targets App/Widget/Tests, App Group, `ScheduleService`/`ScheduleRepository`/кеш). Стартового шаблона немає; нова функціональність розширює наявні модулі.
-- Нова модель даних: Місце (назва, область, черга, підчерга, джерело) замінює глобальний вибір підчерги; потрібна міграція налаштувань v1.
-- Джерело API OE_OUTAGE_DATA: нормалізація формату (yes/no/first/second/mfirst/msecond), обробка застарілих файлів областей.
-- Версіонування: скрипт `scripts/set-version.sh` змінюється так, щоб рахувати лише коміти, що чіпають код застосунку.
-
-### UX Design Requirements
-
-Окремої UX-специфікації немає; UX-вимоги описуються в критеріях приймання історій.
-
-### FR Coverage Map
-
-FR1: Epic 1 - Керування місцями
-FR2: Epic 1 - Каскадний вибір області/черги/підчерги
-FR3: Epic 1 - Картка місця зі станом і шкалою
-FR4: Epic 1 - Деталі місця, історія 14 днів
-FR5: Epic 5 - Перегляд без збереження
-FR6: Epic 5 - Стан на час приїзду
-FR7: Epic 2 - Джерела за областями
-FR8: Epic 2 - Порівняння джерел
-FR9: Epic 2 - Прозорість і довіра
-FR10: Epic 4 - Статистика
-FR11: Epic 4 - Межі ночі
-FR12: Epic 3 - Попередження перед відключенням
-FR13: Epic 3 - Попередження перед поверненням світла
-FR14: Epic 3 - Зміна графіка
-FR15: Epic 6 - Віджети для місць
-FR16: Epic 9 - Live Activity
-FR17: Epic 3 - Режим оновлення
-FR18: Epic 3 - Фонове оновлення
-FR20: Epic 7 - Кольори
-FR21: Epic 8 - Логотип та іконка
-FR22: Epic 8 - Версіонування
-
-NFR1, NFR2, NFR3, NFR5, NFR6 діють наскрізно: перевіряються в критеріях приймання всіх історій. NFR4: Epic 3.
-
-## Epic List
-
-### Epic 1: Мої місця
-Користувач зберігає Дім, Робота та інші місця й на головному екрані бачить стан світла, найближчу зміну й шкалу на 24 години; наявна підчерга з v1 мігрує в перше місце. Спочатку лише Черкаси.
-**FRs covered:** FR1, FR2, FR3, FR4
-
-### Epic 2: Усі області, джерела та довіра
-Користувач вибирає будь-яку область із API, бачить мітки «неофіційне»/«застаріло», обирає джерело для Черкас і порівнює сайт з API.
-**FRs covered:** FR7, FR8, FR9
-
-### Epic 3: Оновлення та сповіщення
-Користувач налаштовує оновлення (ручне або кожні N хвилин), отримує попередження перед відключенням і поверненням світла (для генератора) та сповіщення про зміну графіка.
-**FRs covered:** FR12, FR13, FR14, FR17, FR18
-
-### Epic 4: Статистика
-Користувач бачить години зі світлом і без (загалом, ніч, день) за сьогодні, попередні дні й завтра та налаштовує межі ночі.
-**FRs covered:** FR10, FR11
-
-### Epic 5: Режим подорожі
-Користувач без збереження переглядає будь-яку область і підчергу та бачить стан на час приїзду.
-**FRs covered:** FR5, FR6
-
-### Epic 6: Віджети для моїх місць
-Віджети (малий/середній/великий) прив'язані до збережених місць, зі станами «застаріло»/«помилка» та кнопкою оновлення.
-**FRs covered:** FR15
-
-### Epic 7: Мій вигляд: кольори
-Користувач налаштовує кольори «є світло»/«немає світла» через picker або пресети, у т.ч. для дальтоніків.
-**FRs covered:** FR20
+Backlog of NoLight, mirrored 1:1 with Jira project **NOL**. Every epic and story follows the `nolight-task-format` skill: Description, (Current behavior for bugs), Expected behavior, Flows (when useful), Acceptance criteria, Technical notes, Prototype. Task text is English; UI strings are quoted in Ukrainian because the app UI is Ukrainian.
+
+There is no separate architecture or UX document: technical context comes from the existing v1 code (SwiftUI, WidgetKit, App Intents, App Group, iOS 17+, generated by xcodegen from `project.yml`). Requirements (FR/NFR numbers) refer to the PRD.
+
+Estimates are set by Bohdan in Jira and are not stored here.
+
+## Cross-cutting requirements (apply to every story)
+
+- **NFR1** All times are computed in Europe/Kyiv, including DST transitions.
+- **NFR2** The whole UI is in Ukrainian.
+- **NFR3** Data is cached locally; the app works offline and shows data freshness.
+- **NFR4** Outage / power-return warnings arrive within ±1 min of the configured time.
+- **NFR5** No accounts, analytics or own server; places are stored only on the device.
+- **NFR6** Missing data is never shown as «Світло є» (Power on).
+
+## Sprint plan
+
+| Sprint | Goal | Stories |
+|---|---|---|
+| Sprint 1 | Close v1 leftovers; places replace the global subgroup choice | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4) |
+| Sprint 2 | History, widgets per place, refresh settings | NOL-14 (1.5), NOL-30 (6.1), NOL-31 (6.2), NOL-19 (3.1), NOL-20 (3.2) |
+| Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
+| Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
+| Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
+| Sprint 6 | Look and brand | NOL-32 (7.1), NOL-33 (7.2), NOL-34 (7.3), NOL-35 (8.1), NOL-36 (8.2) |
+| Sprint 7 | Optional: Live Activity | NOL-39 (9.1) |
+
+Order inside a sprint follows dependencies (top to bottom).
+
+---
+
+## NOL-1: Epic 1: My places
+**Type:** Epic · **Sprint:** Sprint 1–2 · **Status:** To Do · **FRs:** FR1, FR2, FR3, FR4
+
+#### Description
+Bohdan keeps several places (Home, Work, …), each bound to a region, queue and subgroup, and sees their power state at a glance. Replaces v1's global list of selected subgroups. Cherkasy only in this epic; other regions come in Epic 2.
+
+#### Expected behavior
+- The home screen is a list of places with state, next change, a 24-hour timeline and freshness.
+- Places can be added, renamed, reordered and deleted.
+- A place opens a details screen with today, tomorrow and up to 14 previous days.
+- v1 users keep their subgroup(s) after the update.
+
+#### Acceptance criteria
+- **AC1.** All stories NOL-10…NOL-14 are done.
+- **AC2.** A v1 install upgrades without losing its selected subgroups.
+
+#### Technical notes
+- New `Place` model + `PlaceStore` (App Group `UserDefaults` or JSON) replaces `SettingsStore.selectedSubgroups` (`selectedSubgroups.v1`).
+- `AppState` switches from `[Subgroup]` to `[Place]`.
+- Region/source fields exist on `Place` from day one (Cherkasy + site only) so Epic 2 doesn't need another migration.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-10: 1.1 Home screen with places list (v1 migration)
+**Type:** Story · **Epic:** NOL-1 · **Sprint:** Sprint 1 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to open the app and immediately see my place with its power state, so that I don't have to pick my subgroup again after the update.
+
+#### Expected behavior
+- The first screen lists places as cards.
+- Each card shows: place name, state («Світло є» / «Відключення» / «Невідомо»), time and type of the next change, a 24-hour timeline with a now-marker, and a freshness label.
+- On first launch after updating from v1, previously selected subgroups become places automatically.
+
+#### Flows
+1. App launches → `PlaceStore` is empty and `selectedSubgroups.v1` exists → migration runs once.
+2. Migration: first selected subgroup → place «Дім» (Home); every further subgroup → place «Підчерга X.Y» (Subgroup X.Y); region = Cherkasy, source = site.
+3. Mark migration done (`placesMigrated.v1 = true`) → home screen shows the places.
+4. If there was nothing to migrate → empty state with an «Додати місце» (Add place) button.
+
+#### Acceptance criteria
+- **AC1.** Given v1 had subgroup 3.2 selected, When I launch the new version for the first time, Then a place «Дім» with subgroup 3.2 is on the home screen.
+- **AC2.** Given v1 had several subgroups selected, When migration runs, Then each becomes a place and none are lost.
+- **AC3.** Given migration already ran, When I relaunch, Then it does not run again and does not duplicate places.
+- **AC4.** Given a place card, Then it shows state, next change time and type, a 24-hour timeline with a now-marker, and freshness.
+- **AC5.** Given there is no data for a place, When I open the home screen, Then the state is «Невідомо» (Unknown), never «Світло є».
+- **AC6.** All texts are Ukrainian and all times are Europe/Kyiv.
+
+#### Technical notes
+- Add `Shared/Models/Place.swift` (`id: UUID`, `name`, `region`, `subgroup: Subgroup`, `source`, `order`) and `Shared/Data/PlaceStore.swift` in the App Group.
+- Migration reads `SettingsStore.selectedSubgroups` (key `selectedSubgroups.v1`); keep the old key untouched for one release so a rollback still works.
+- `HomeView` / `SubgroupCardView` → `PlaceCardView`; reuse `StatusCalculator`, `TimelineBarView`, `StaleWarningLabel`.
+- **Open question:** naming of the 2nd+ migrated places (proposal: «Підчерга X.Y»).
+- Widgets still use `SelectSubgroupIntent` until NOL-30; they must keep working.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-11: 1.2 Add a place
+**Type:** Story · **Epic:** NOL-1 · **Sprint:** Sprint 1 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to add a new place (e.g. Work), so that I can see its schedule separately from Home.
+
+#### Expected behavior
+- An «Додати місце» (Add place) form asks for a name and a region → queue → subgroup cascade.
+- The saved place appears at the end of the list. The number of places is unlimited.
+- In this story only Cherkasy is selectable; other regions arrive with NOL-15.
+
+#### Flows
+1. Home → «Додати місце».
+2. Enter name → pick region (only «Черкаська») → pick queue 1–6 → pick subgroup .1/.2.
+3. «Зберегти» (Save) → place is created → back to home, list scrolled to the new place.
+4. Cancel at any step → nothing is saved.
+
+#### Acceptance criteria
+- **AC1.** Given the add form, When I enter a name and choose region → queue → subgroup and save, Then the place is stored and shown in the list.
+- **AC2.** Given I already have many places, When I add another, Then it is accepted (no limit).
+- **AC3.** Given the name field is empty, When I try to save, Then saving is disabled.
+- **AC4.** Given a region without data, When I select it, Then an explanation is shown instead of an empty screen.
+- **AC5.** Given this story, Then only Cherkasy can be selected.
+
+#### Technical notes
+- Replace `SubgroupPickerView` with a form-based `AddPlaceView` (NavigationStack + Picker per level).
+- Region list comes from a `RegionCatalog` with Cherkasy only; designed so NOL-15 can plug in API regions.
+- Duplicate places (same subgroup) are allowed — different names may share a subgroup.
+- Depends on: NOL-10.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-12: 1.3 Manage places
+**Type:** Story · **Epic:** NOL-1 · **Sprint:** Sprint 1 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to rename, reorder and delete places, so that the list matches my situation.
 
-### Epic 8: Бренд і версії
-Застосунок має логотип, іконку й заставку; версія змінюється лише при зміні коду застосунку.
-**FRs covered:** FR21, FR22
+#### Expected behavior
+- Places can be reordered by drag, renamed and deleted (with confirmation).
+- Deleting a place cancels its scheduled notifications (once notifications exist).
 
-### Epic 9: Live Activity (необов'язковий, після всього)
-Відлік до наступної зміни стану на екрані блокування.
-**FRs covered:** FR16
+#### Acceptance criteria
+- **AC1.** Given several places, When I change their order, Then the order persists after relaunch.
+- **AC2.** Given a place, When I rename it, Then the new name is shown everywhere in the app (and in widgets once NOL-30 is done).
+- **AC3.** Given a place, When I delete it and confirm, Then it disappears.
+- **AC4.** Given a deleted place had scheduled notifications, Then they are cancelled.
+
+#### Technical notes
+- `List` with `.onMove` / `.onDelete` + an edit sheet for renaming; persist `order` in `PlaceStore`.
+- Expose a `PlaceStore.didDelete(placeID)` hook used by the notification scheduler later (NOL-21) to remove pending requests with identifiers prefixed by the place ID.
+- Call `WidgetCenter.shared.reloadAllTimelines()` after any change.
+- Depends on: NOL-10.
 
-## Epic 1: Мої місця
+#### Prototype
+TBD — Claude artifact prototype
 
-Користувач зберігає Дім, Робота та інші місця й на головному екрані бачить стан світла, найближчу зміну й шкалу на 24 години.
+### NOL-13: 1.4 Place details: today and tomorrow
+**Type:** Story · **Epic:** NOL-1 · **Sprint:** Sprint 1 · **Status:** To Do
 
-### Story 1.1: Головний екран зі списком місць (з міграцією v1)
+#### Description
+As Bohdan, I want to open a place and see power and outage intervals, so that I can plan today and tomorrow.
+
+#### Expected behavior
+- Tapping a place card opens details with a «Сьогодні / Завтра» (Today / Tomorrow) switch, a timeline and an interval list.
+- If tomorrow isn't published yet, a clear message replaces the empty timeline.
+
+#### Acceptance criteria
+- **AC1.** Given I tap a place card, When details open, Then there is a «Сьогодні / Завтра» switch with a timeline and list of intervals.
+- **AC2.** Given tomorrow's schedule isn't published, When I pick «Завтра», Then «Графік ще не опублікований» (Schedule not published yet) is shown instead of an empty timeline.
+- **AC3.** Given an interval crosses midnight, Then it is shown correctly on both days.
+
+#### Technical notes
+- Adapt `SubgroupDetailView` to take a `Place`; reuse `IntervalListView`, `Legend`, `ScheduleSnapshot.schedule(for:dateKey:)` (already handles `spillover` and `.notPublished`).
+- Depends on: NOL-10.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-14: 1.5 14-day history
+**Type:** Story · **Epic:** NOL-1 · **Sprint:** Sprint 2 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to browse previous days, so that I can compare them with today.
+
+#### Expected behavior
+- Place details let me step back through the last 14 days.
+- Days older than 14 days are removed from the cache; days with no data show «Невідомо».
+
+#### Acceptance criteria
+- **AC1.** Given the app saved previous days, When I open place details, Then I can navigate to any of the last 14 days.
+- **AC2.** Given a day older than 14 days, When a refresh runs, Then it is removed from the cache.
+- **AC3.** Given a day had no data, When I open it, Then «Невідомо» is shown.
+
+#### Technical notes
+- `ScheduleService.fetchLatest` currently keeps only posts with `dateKey >= yesterday` (`cutoff = addingDays(-1, …)`); change retention to 14 days (`AppConfig.historyDays = 14`).
+- The news list only exposes recent posts, so history accumulates from the update date onward; it is not back-filled.
+- Day picker: a date strip or `DatePicker` limited to `[today-13 … tomorrow]`.
+- Cache size stays small (12 subgroups × 15 days); no cache version bump needed if the shape is unchanged.
+- Depends on: NOL-13.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+---
 
-As a Богдан,
-I want відкрити застосунок і одразу бачити своє місце зі станом світла,
-So that не вибирати підчергу заново після оновлення.
+## NOL-2: Epic 2: All regions, sources and trust
+**Type:** Epic · **Sprint:** Sprint 3 · **Status:** To Do · **FRs:** FR7, FR8, FR9
 
-**Acceptance Criteria:**
+#### Description
+Bohdan can pick any region available in the OE_OUTAGE_DATA API, sees how trustworthy and fresh each schedule is, chooses the source for Cherkasy, and compares the official site with the API.
+
+#### Expected behavior
+- Any region with API data can be used for a place.
+- API schedules are labelled «неофіційне джерело» (unofficial source); stale data is clearly marked.
+- Cherkasy places can switch between the official site and the API, and compare both side by side.
+
+#### Acceptance criteria
+- **AC1.** All stories NOL-15…NOL-18 are done.
+- **AC2.** A failure of one source never breaks places that use the other source.
+
+#### Technical notes
+- New `ScheduleSource` protocol with `CherkasyOblenergoSiteSource` (existing `ScheduleService`) and `OutageDataAPISource`.
+- Snapshot/cache must become per-source (site vs API) and per-region → cache version bump to v2 with migration from v1.
+- Risk: the API is unofficial, unlicensed, on free hosting; some regions are stale (PRD §8.1).
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-15: 2.1 Pick any region from the API
+**Type:** Story · **Epic:** NOL-2 · **Sprint:** Sprint 3 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to choose any region in the cascade, so that I can see schedules beyond Cherkasy.
+
+#### Expected behavior
+- The region picker lists every region that has data in the API; queues and subgroups follow that region's file.
+- API values are normalized to «є / немає / невідомо» (on / off / unknown).
+
+#### Acceptance criteria
+- **AC1.** Given the OE_OUTAGE_DATA API is reachable, When I add a place, Then all regions with API data are listed and their queues/subgroups match the region file.
+- **AC2.** Given API values (yes/no, first/second/mfirst/msecond), When the app parses a file, Then they are normalized to available/outage/unknown; any unknown value gives unknown.
+- **AC3.** Given the region file has no data for a subgroup, When I open the place, Then «Невідомо» is shown.
+
+#### Technical notes
+- Source: GitHub repo `yaroslav2901/OE_OUTAGE_DATA` (raw JSON per region). Add `OutageDataAPISource` + `OutageDataParser` in `Shared/Parsing/`, with fixture tests in `Tests/`.
+- **Open question (PRD §8 q2):** exact meaning of first/second/mfirst/msecond (half-hour slots?) — confirm against real files before mapping to `MinuteRange`.
+- Region catalog is fetched and cached; offline → last known catalog.
+- Depends on: NOL-11.
 
-**Given** у v1 була вибрана підчерга
-**When** я вперше запускаю нову версію
-**Then** створюється місце «Дім» із цією підчергою і воно є на головному екрані
-**And** картка місця показує стан (є/немає/невідомо), час і тип найближчої зміни, шкалу 24 години з маркером поточного часу та позначку свіжості
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-16: 2.2 Trust and freshness labels
+**Type:** Story · **Epic:** NOL-2 · **Sprint:** Sprint 3 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to see where data comes from and how fresh it is, so that I don't rely on an outdated schedule.
+
+#### Expected behavior
+- Every schedule shows its source; API schedules are labelled «неофіційне джерело».
+- Data older than 1 hour shows «застаріло» (stale); older than 24 hours shows «протерміновано» (expired).
+- Offline, the last good schedule is shown with «оновлено о…» (updated at…).
 
-**Given** даних немає
-**When** відкриваю головний екран
-**Then** стан «невідомо», ніколи не «є світло»
-**And** усі тексти українською, час за Europe/Kyiv
+#### Acceptance criteria
+- **AC1.** Given a schedule from the API, When it is shown, Then it is labelled «неофіційне джерело».
+- **AC2.** Given data older than 1 hour, When I view the place, Then a «застаріло» warning is shown; after 24 hours — «протерміновано».
+- **AC3.** Given no network, When I open the app, Then the last successful schedule is shown with «оновлено о…».
+- **AC4.** Given a network error, Then the cache is not erased.
 
-### Story 1.2: Додати місце
+#### Technical notes
+- `AppConfig.staleAfter` is currently **4 h**; PRD says **1 h** → change to `3600` (PRD §8 q1 still lists it as an assumption).
+- `StatusCalculator.reliability(fetchedAt:now:)` and `StaleWarningLabel` already exist; extend with a source badge.
+- `ScheduleRepository.refresh` already keeps the cache on error — add a regression test.
+- Depends on: NOL-15.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-17: 2.3 Source choice for Cherkasy
+**Type:** Story · **Epic:** NOL-2 · **Sprint:** Sprint 3 · **Status:** To Do
 
-As a Богдан,
-I want додати нове місце (Робота),
-So that бачити його графік окремо від дому.
+#### Description
+As Bohdan, I want to choose either the oblenergo site or the API for Cherkasy, so that I use the source I trust.
 
-**Acceptance Criteria:**
+#### Expected behavior
+- Cherkasy place settings offer «Сайт обленерго» (default) or «API».
+- Other regions have no choice; they always use the API.
 
-**Given** відкрита форма додавання
-**When** я задаю назву й вибираю область → чергу → підчергу
-**Then** місце зберігається й з'являється в списку
-**And** кількість місць не обмежена
+#### Acceptance criteria
+- **AC1.** Given a Cherkasy place, When I open its settings, Then I can choose «Сайт обленерго» (default) or «API».
+- **AC2.** Given I changed the source, When I return home, Then the card and widgets show the schedule from the new source with the matching label.
+- **AC3.** Given a place in another region, Then there is no source choice and the API is used.
 
-**Given** обрана область без даних
-**When** я її вибираю
-**Then** показується пояснення, а не порожній екран
-**And** у цій історії доступні лише Черкаси; інші області додаються в Epic 2
+#### Technical notes
+- `Place.source` already exists from NOL-10; add a place-settings screen.
+- Changing source triggers a refresh for that place and `WidgetCenter.reloadAllTimelines()`.
+- Depends on: NOL-15, NOL-16.
+
+#### Prototype
+TBD — Claude artifact prototype
 
-### Story 1.3: Керувати місцями
+### NOL-18: 2.4 Source comparison screen
+**Type:** Story · **Epic:** NOL-2 · **Sprint:** Sprint 3 · **Status:** To Do
 
-As a Богдан,
-I want перейменовувати, змінювати порядок і видаляти місця,
-So that список відповідав моїй ситуації.
+#### Description
+As Bohdan, I want to compare the site and the API for my subgroup, so that I see where they differ and choose the primary one.
 
-**Acceptance Criteria:**
+#### Expected behavior
+- «Порівняння джерел» (Source comparison) shows both schedules side by side with update times and highlighted differences.
+- If one source is down, the other is still shown.
+- «Зробити основним» (Make primary) switches the place's source.
 
-**Given** є кілька місць
-**When** я змінюю порядок
-**Then** порядок зберігається після перезапуску
+#### Flows
+1. Cherkasy place details → «Порівняння джерел».
+2. Both sources load in parallel → two timelines + diff highlight.
+3. Optional: «Зробити основним» on one side → `Place.source` updated → back to details.
 
-**Given** є місце
-**When** я перейменовую його
-**Then** нова назва видна скрізь у застосунку
+#### Acceptance criteria
+- **AC1.** Given a Cherkasy place, When I open «Порівняння джерел», Then I see two timelines side by side, each source's update time, and highlighted differences in intervals.
+- **AC2.** Given one source is unavailable, When I open the screen, Then it says which one is unavailable and still shows the other.
+- **AC3.** Given I see a difference, When I tap «Зробити основним», Then the place's source changes (NOL-17).
+
+#### Technical notes
+- Diff = per-minute XOR of the two `DaySchedule`s, rendered as an overlay on `TimelineBarView`.
+- Fetch both sources with `async let`; failures are independent.
+- Depends on: NOL-17.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+---
+
+## NOL-3: Epic 3: Refresh and notifications
+**Type:** Epic · **Sprint:** Sprint 2, Sprint 4 · **Status:** To Do · **FRs:** FR12, FR13, FR14, FR17, FR18
+
+#### Description
+Bohdan controls how often data refreshes, gets warned before outages and before power returns (to run a generator), and is told when a schedule changes.
+
+#### Expected behavior
+- Refresh is manual or automatic every N minutes/hours.
+- Per-place local notifications before an outage and before power returns.
+- A notification and a history entry when a place's schedule changes.
 
-**Given** є місце
-**When** я видаляю його і підтверджую
-**Then** місце зникає, а пов'язані з ним заплановані сповіщення скасовуються (коли вони існують)
+#### Acceptance criteria
+- **AC1.** All stories NOL-19…NOL-24 are done.
+- **AC2.** Warnings arrive within ±1 min of the configured time (NFR4, SM-2).
+- **AC3.** Battery use is not traded for more frequent refresh (SM-C1).
 
-### Story 1.4: Деталі місця: сьогодні та завтра
+#### Technical notes
+- No server (PRD §5): everything is local notifications + `BGAppRefreshTask`; change notifications can be late — accepted trade-off.
+- iOS keeps at most 64 pending local notifications → one scheduler that plans the nearest ones and replans on every refresh and app launch.
 
-As a Богдан,
-I want відкрити місце й побачити інтервали світла й відключень,
-So that спланувати сьогодні й завтра.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+### NOL-19: 3.1 Refresh mode
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 2 · **Status:** To Do
 
-**Given** я натискаю картку місця
-**When** відкривається екран деталей
-**Then** є перемикач «Сьогодні / Завтра» зі шкалою й списком інтервалів
+#### Description
+As Bohdan, I want to choose manual or automatic refresh every N minutes/hours, so that I control how often requests are made.
 
-**Given** на завтра графік ще не опубліковано
-**When** вибираю «Завтра»
-**Then** показується «Графік ще не опублікований», а не порожня шкала
+#### Expected behavior
+- Settings: «Лише вручну» (Manual only) or «Автоматично» (Automatic) with presets 15/30 min, 1/3/6 h (minimum 15 min).
+- The «Оновити» (Refresh) button is always on the home screen.
 
-### Story 1.5: Історія за 14 днів
+#### Acceptance criteria
+- **AC1.** Given the settings screen, When I choose «Автоматично», Then I can pick an interval from presets 15/30 min, 1/3/6 h; the minimum is 15 min.
+- **AC2.** Given «Лише вручну» is chosen, When the app is in the background, Then no background refresh is registered.
+- **AC3.** Given any mode, Then the home screen has a «Оновити» button.
 
-As a Богдан,
-I want переглядати попередні дні,
-So that порівнювати їх із сьогоднішнім.
+#### Technical notes
+- New `RefreshSettings` in the App Group (`mode`, `interval`).
+- Manual mode → `BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundRefresh.identifier)`.
+- Widgets still refresh themselves via `refreshIfNeeded(maxAge:)`; document that widget refresh is independent of this setting (**Open question:** should manual mode also stop widget self-refresh?).
 
-**Acceptance Criteria:**
+#### Prototype
+TBD — Claude artifact prototype
 
-**Given** застосунок зберіг графіки попередніх днів
-**When** я відкриваю деталі місця
-**Then** можу перейти на будь-який із останніх 14 днів
+### NOL-20: 3.2 Background refresh
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 2 · **Status:** To Do
 
-**Given** день старший за 14 днів
-**When** виконується оновлення
-**Then** його видалено з кешу
+#### Description
+As Bohdan, I want schedules to refresh in the background, so that they are current without opening the app.
 
-**Given** для дня не було даних
-**When** я його відкриваю
-**Then** показується «невідомо»
+#### Expected behavior
+- In automatic mode, iOS background runs refresh all places and reload widgets.
+- Settings explain that iOS does not guarantee the exact interval.
+- A failed background run leaves the cache untouched.
 
-## Epic 2: Усі області, джерела та довіра
+#### Acceptance criteria
+- **AC1.** Given automatic refresh, When iOS runs the background task, Then all places are refreshed and widgets reload.
+- **AC2.** Given the interval setting, Then a note next to it says iOS does not guarantee the exact interval.
+- **AC3.** Given an error during a background refresh, Then the cache does not change.
 
-Користувач вибирає будь-яку область із API, бачить мітки довіри, обирає джерело для Черкас і порівнює сайт з API.
+#### Technical notes
+- `BackgroundRefresh.schedule()` hard-codes `30 * 60`; use the interval from NOL-19.
+- `BackgroundRefresh.perform()` must refresh every source used by any place (after Epic 2) and then call the notification scheduler (NOL-21).
+- Test with Xcode's "Simulate Background Fetch" / `_simulateLaunchForTaskWithIdentifier`.
+- Depends on: NOL-19.
 
-### Story 2.1: Вибір будь-якої області з API
+#### Prototype
+N/A — no UI (only a note in settings)
 
-As a Богдан,
-I want вибрати будь-яку область у каскаді,
-So that бачити графік не лише Черкас.
+### NOL-21: 3.3 Warning before an outage
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 4 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want a notification N minutes before an outage, so that I can start the generator in time.
 
-**Given** API OE_OUTAGE_DATA доступний
-**When** я додаю місце
-**Then** у списку є всі області, що мають дані в API, а їхні черги й підчерги відповідають файлу області
+#### Expected behavior
+- Each place has an «Попередити перед відключенням» (Warn before outage) setting with a lead time.
+- A local notification fires at that time for every upcoming outage.
 
-**Given** формат значень API (yes/no, first/second/mfirst/msecond)
-**When** застосунок розбирає файл
-**Then** значення нормалізуються до станів «є/немає/невідомо»; невідоме значення дає «невідомо»
+#### Flows
+1. On refresh, app launch or place change → scheduler collects upcoming outage starts for all places with warnings on.
+2. Sort by fire date → keep the nearest ones within the iOS limit (64, shared with NOL-22).
+3. Remove pending requests not in the new set → add missing ones (identifier `placeID.kind.startDate`).
 
-**Given** файл області не містить даних для підчерги
-**When** користувач відкриває місце
-**Then** показується «невідомо»
+#### Acceptance criteria
+- **AC1.** Given a lead time (e.g. 15 min) for a place, When there is an upcoming outage, Then a local notification is scheduled and arrives within ±1 min.
+- **AC2.** Given more than 64 notifications would be needed, Then only the nearest are scheduled; the rest are scheduled on later replans.
+- **AC3.** Given the schedule changed or the place was deleted, Then notifications are recalculated or cancelled.
 
-### Story 2.2: Мітки довіри та свіжості
+#### Technical notes
+- New `NotificationScheduler` in `Shared/` using `UNUserNotificationCenter` with `UNCalendarNotificationTrigger` in Europe/Kyiv.
+- Ask notification permission the first time a warning is enabled.
+- Uses `StatusCalculator.absoluteIntervals` to find transitions.
+- Depends on: NOL-12, NOL-20.
 
-As a Богдан,
-I want бачити, звідки дані й наскільки вони свіжі,
-So that не покладатися на застарілий графік.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+### NOL-22: 3.4 Warning before power returns
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 4 · **Status:** To Do
 
-**Given** графік із API
-**When** він відображається
-**Then** позначений «неофіційне джерело»
+#### Description
+As Bohdan, I want a notification N minutes before power returns, so that I can stop the generator in time.
 
-**Given** дані старші за 1 годину
-**When** відображаю місце
-**Then** показується попередження «застаріло»; після 24 годин — «протерміновано»
+#### Expected behavior
+- A separate per-place setting «Попередити перед поверненням світла» (Warn before power returns) with its own lead time.
 
-**Given** мережі немає
-**When** відкриваю застосунок
-**Then** показується останній успішний графік з позначкою «оновлено о…»
-**And** помилка мережі не стирає кеш
+#### Acceptance criteria
+- **AC1.** Given a lead time configured separately from NOL-21, When power is about to return, Then a notification is scheduled and arrives within ±1 min.
+- **AC2.** Given the warning is off for the place, Then no such notifications are scheduled.
 
-### Story 2.3: Вибір джерела для Черкас
+#### Technical notes
+- Same `NotificationScheduler` as NOL-21 with `kind = .powerReturn`; shares the 64-slot budget.
+- Depends on: NOL-21.
 
-As a Богдан,
-I want вибрати для Черкас сайт обленерго або API,
-So that користуватися тим джерелом, якому довіряю.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+### NOL-23: 3.5 Schedule change notification
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 4 · **Status:** To Do
 
-**Given** місце в Черкасах
-**When** відкриваю його налаштування
-**Then** можу вибрати «Сайт обленерго» (за замовчуванням) або «API»
+#### Description
+As Bohdan, I want a notification when my place's schedule changes, so that I can rearrange my plans.
 
-**Given** я змінив джерело
-**When** повертаюсь на головний екран
-**Then** картка й віджети показують графік з нового джерела та відповідну мітку
+#### Expected behavior
+- After a refresh that changes a place's intervals: «Графік для «Робота» змінився» (Schedule for "Work" changed) with a short summary.
+- No notification when nothing changed.
+- Settings say the notification may be delayed.
 
-**Given** місце в іншій області
-**Then** вибору джерела немає, використовується API
+#### Acceptance criteria
+- **AC1.** Given a refresh detects changed intervals for a place, When the refresh finishes, Then a notification «Графік для «{name}» змінився» with a short summary is delivered.
+- **AC2.** Given no changes, Then no notification is sent.
+- **AC3.** Given delivery depends on iOS background runs, Then settings say the notification may arrive late.
 
-### Story 2.4: Екран порівняння джерел
+#### Technical notes
+- Compare the place's `DaySchedule` for today/tomorrow before and after `ScheduleRepository.refresh()`; a newly published "tomorrow" is not a change (**Open question:** notify on first publication of tomorrow?).
+- Immediately-delivered `UNNotificationRequest` (trigger nil); after a change replan warnings (NOL-21/22).
+- Depends on: NOL-20, NOL-21.
 
-As a Богдан,
-I want порівняти сайт і API для своєї підчерги,
-So that побачити, де вони розходяться, і вибрати основне.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+### NOL-24: 3.6 Schedule change history
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 4 · **Status:** To Do
 
-**Given** місце в Черкасах
-**When** відкриваю «Порівняння джерел»
-**Then** бачу два графіки поряд, час оновлення кожного та виділену різницю в інтервалах
+#### Description
+As Bohdan, I want to see how a schedule changed, so that I can compare the old and new timetable.
 
-**Given** одне з джерел недоступне
-**When** відкриваю екран
-**Then** показується, яке саме недоступне, а друге все одно відображається
+#### Expected behavior
+- Place details have a «Зміни графіка» (Schedule changes) list: time of change, old and new intervals.
+- Entries older than 14 days are removed.
 
-**Given** я бачу різницю
-**When** натискаю «Зробити основним»
-**Then** джерело місця змінюється (Story 2.3)
+#### Acceptance criteria
+- **AC1.** Given a change was recorded, When I open the place history, Then I see when it changed and the old and new intervals.
+- **AC2.** Given an entry older than 14 days, Then it is removed.
 
-## Epic 3: Оновлення та сповіщення
+#### Technical notes
+- Store `ScheduleChange { placeID, dateKey, detectedAt, old: [MinuteRange], new: [MinuteRange] }` in a separate App Group JSON file.
+- Written by the same diff as NOL-23.
+- Depends on: NOL-23.
 
-Користувач налаштовує оновлення, отримує попередження перед відключенням і поверненням світла й сповіщення про зміну графіка.
+#### Prototype
+TBD — Claude artifact prototype
 
-### Story 3.1: Режим оновлення
+---
 
-As a Богдан,
-I want вибрати ручне або автоматичне оновлення кожні N хвилин/годин,
-So that контролювати частоту запитів.
+## NOL-4: Epic 4: Statistics
+**Type:** Epic · **Sprint:** Sprint 5 · **Status:** To Do · **FRs:** FR10, FR11
 
-**Acceptance Criteria:**
+#### Description
+Bohdan sees how many hours he had power and no power (total, night, day) for today, previous days and tomorrow, and can set the night bounds.
 
-**Given** екран налаштувань
-**When** вибираю «Автоматично»
-**Then** можу задати інтервал (пресети 15/30 хв, 1/3/6 год), мінімум 15 хв
+#### Expected behavior
+- A statistics view per place with totals and a night/day split.
+- Night bounds are configurable (default 00:00–06:00).
 
-**Given** вибрано «Лише вручну»
-**When** застосунок у фоні
-**Then** фонові оновлення не реєструються
+#### Acceptance criteria
+- **AC1.** All stories NOL-25…NOL-27 are done.
+- **AC2.** Days without data never count towards totals.
 
-**Given** будь-який режим
-**Then** є кнопка «Оновити» на головному екрані
+#### Technical notes
+- Pure calculation over `DaySchedule` in a new `StatisticsCalculator` (unit-tested; DST days have 23/25 hours).
 
-### Story 3.2: Фонове оновлення
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want щоб графіки оновлювалися у фоні,
-So that вони були актуальні без відкриття застосунку.
+### NOL-25: 4.1 Statistics for a period
+**Type:** Story · **Epic:** NOL-4 · **Sprint:** Sprint 5 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want to see hours with and without power, so that I understand how heavy the outages are.
 
-**Given** вибрано автооновлення
-**When** iOS запускає фонове завдання
-**Then** оновлюються всі місця й віджети перезавантажуються
+#### Expected behavior
+- Hours with/without power for today, tomorrow (if published) and selected previous days.
+- Days with no data are marked «Невідомо» and excluded from totals.
 
-**Given** налаштування інтервалу
-**Then** поряд є пояснення, що iOS не гарантує точний інтервал
+#### Acceptance criteria
+- **AC1.** Given a place with data, When I open statistics, Then I see hours with and without power for today, tomorrow (if available) and selected previous days.
+- **AC2.** Given a day without data, Then it is marked «Невідомо» and not included in totals.
 
-**Given** помилка під час фонового оновлення
-**Then** кеш не змінюється
+#### Technical notes
+- Uses 14-day history (NOL-14). Unknown minutes are reported separately, never folded into "with power".
+- Depends on: NOL-14.
 
-### Story 3.3: Попередження перед відключенням
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want отримувати сповіщення за N хвилин до відключення,
-So that встигнути запустити генератор.
+### NOL-26: 4.2 Night and day split
+**Type:** Story · **Epic:** NOL-4 · **Sprint:** Sprint 5 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want night and day shown separately, so that I can judge when outages hurt more.
 
-**Given** налаштований час (наприклад, 15 хв) для місця
-**When** є майбутнє відключення
-**Then** локальне сповіщення планується на цей момент і приходить у межах ±1 хв
+#### Expected behavior
+- Statistics split into «Ніч» (Night) and «День» (Day); night is 00:00–06:00 by default.
 
-**Given** понад 64 запланованих сповіщень
-**Then** планується лише найближчі за часом, решта — після перепланування
+#### Acceptance criteria
+- **AC1.** Given default night bounds 00:00–06:00, When I open statistics, Then hours with and without power are split into night and day.
+- **AC2.** Given night bounds that cross midnight (e.g. 22:00–06:00), Then the calculation is correct.
 
-**Given** графік змінився або місце видалено
-**Then** сповіщення перераховуються або скасовуються
+#### Technical notes
+- Night range crossing midnight = two `MinuteRange`s per day; intersect with outage ranges.
+- Depends on: NOL-25.
 
-### Story 3.4: Попередження перед поверненням світла
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want сповіщення за N хвилин до повернення світла,
-So that вчасно вимкнути генератор.
+### NOL-27: 4.3 Night bounds settings
+**Type:** Story · **Epic:** NOL-4 · **Sprint:** Sprint 5 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want to change when night starts and ends, so that it matches my routine.
 
-**Given** налаштований час (окремо від Story 3.3)
-**When** є майбутнє повернення світла
-**Then** сповіщення планується й приходить у межах ±1 хв
+#### Expected behavior
+- Settings let me set night start and end; statistics recalculate immediately.
 
-**Given** вимкнено у налаштуваннях місця
-**Then** сповіщення не плануються
+#### Acceptance criteria
+- **AC1.** Given settings, When I set custom bounds, Then statistics are recalculated.
+- **AC2.** Given start equals end, Then a validation error is shown.
 
-### Story 3.5: Сповіщення про зміну графіка
+#### Technical notes
+- Store `nightStartMinute` / `nightEndMinute` in the App Group; two `DatePicker(.hourAndMinute)` in `SettingsView`.
+- Depends on: NOL-26.
 
-As a Богдан,
-I want отримати сповіщення, коли графік мого місця змінився,
-So that перебудувати плани.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+---
 
-**Given** оновлення виявило зміну інтервалів місця
-**When** оновлення завершилось
-**Then** приходить сповіщення «Графік для «Робота» змінився» зі стислим підсумком
+## NOL-5: Epic 5: Travel mode
+**Type:** Epic · **Sprint:** Sprint 5 · **Status:** To Do · **FRs:** FR5, FR6
 
-**Given** змін немає
-**Then** сповіщення не приходить
+#### Description
+Without saving a place, Bohdan looks up any region and subgroup and sees whether there will be power when he arrives.
 
-**Given** доставка залежить від фонового запуску iOS
-**Then** у налаштуваннях сказано, що сповіщення може прийти із запізненням
+#### Expected behavior
+- A «Подорож» (Travel) screen with the region → queue → subgroup cascade, schedule preview and arrival-time check.
 
-### Story 3.6: Історія змін графіка
+#### Acceptance criteria
+- **AC1.** All stories NOL-28…NOL-29 are done.
+- **AC2.** Travel lookups never create places unless the user explicitly saves one.
 
-As a Богдан,
-I want переглядати, як змінювався графік,
-So that бачити старий і новий розклад.
+#### Technical notes
+- Reuses the cascade from NOL-11/NOL-15 and the place details views with a transient `Place`.
 
-**Acceptance Criteria:**
+#### Prototype
+TBD — Claude artifact prototype
 
-**Given** зафіксовано зміну
-**When** відкриваю історію місця
-**Then** бачу час зміни та старі й нові інтервали
+### NOL-28: 5.1 Preview without saving
+**Type:** Story · **Epic:** NOL-5 · **Sprint:** Sprint 5 · **Status:** To Do
 
-**Given** запис старший за 14 днів
-**Then** його видалено
+#### Description
+As Bohdan, I want to quickly view the schedule of any region and subgroup, so that I don't create a place for a one-off check.
 
-## Epic 4: Статистика
+#### Expected behavior
+- «Подорож» → pick region, queue, subgroup → see the schedule.
+- «Зберегти як місце» (Save as place) turns it into a place.
 
-Користувач бачить години зі світлом і без (загалом, ніч, день) за різні періоди.
+#### Acceptance criteria
+- **AC1.** Given the «Подорож» screen, When I choose region, queue and subgroup, Then I see the schedule without creating a place.
+- **AC2.** Given I viewed a schedule, When I tap «Зберегти як місце», Then a place is created with those parameters.
 
-### Story 4.1: Статистика за період
+#### Technical notes
+- Transient `Place` (not in `PlaceStore`); data comes through the same repository/cache.
+- Depends on: NOL-15.
 
-As a Богдан,
-I want бачити кількість годин зі світлом і без,
-So that розуміти навантаження відключень.
+#### Prototype
+TBD — Claude artifact prototype
 
-**Acceptance Criteria:**
+### NOL-29: 5.2 State at arrival time
+**Type:** Story · **Epic:** NOL-5 · **Sprint:** Sprint 5 · **Status:** To Do
 
-**Given** місце з даними
-**When** відкриваю статистику
-**Then** бачу години зі світлом і без за сьогодні, завтра (за наявності) і вибрані попередні дні
+#### Description
+As Bohdan, I want to enter my arrival time or trip duration, so that I know whether there will be power when I get there.
 
-**Given** для дня немає даних
-**Then** він позначений «невідомо» і не входить у підсумки
+#### Expected behavior
+- Enter an arrival time or a duration from now; see the state at that moment and the next change after it.
 
-### Story 4.2: Розбивка ніч і день
+#### Flows
+1. Travel preview → «Час приїзду» (Arrival time) or «Тривалість поїздки» (Trip duration).
+2. App computes the arrival `Date` in Europe/Kyiv → state at that minute + next change.
+3. Arrival after midnight → use the next day's schedule, or «Невідомо» if not published.
 
-As a Богдан,
-I want окремо бачити ніч і день,
-So that оцінити, коли відключення чутливіші.
+#### Acceptance criteria
+- **AC1.** Given a selected subgroup, When I enter an arrival time or a duration from now, Then I see the state at that moment and the next change after it.
+- **AC2.** Given arrival after midnight, Then the next day's schedule is used, or «Невідомо» if it isn't published.
 
-**Acceptance Criteria:**
+#### Technical notes
+- `StatusCalculator.status(today:tomorrow:now:)` with `now = arrival` already covers today+tomorrow; beyond tomorrow → unknown.
+- Depends on: NOL-28.
 
-**Given** межі ночі за замовчуванням 00:00–06:00
-**When** відкриваю статистику
-**Then** години зі світлом і без розбиті на ніч і день
+#### Prototype
+TBD — Claude artifact prototype
 
-**Given** межі ночі перетинають північ (наприклад, 22:00–06:00)
-**Then** підрахунок коректний
+---
 
-### Story 4.3: Налаштування меж ночі
+## NOL-6: Epic 6: Widgets for my places
+**Type:** Epic · **Sprint:** Sprint 2 · **Status:** To Do · **FRs:** FR15
 
-As a Богдан,
-I want змінити початок і кінець ночі,
-So that відповідати моєму розпорядку.
+#### Description
+Widgets (small, medium, large) show a saved place instead of a fixed subgroup, with «застаріло» / error states and a refresh button.
 
-**Acceptance Criteria:**
+#### Expected behavior
+- Each widget instance is configured with one of my places.
+- Stale data and errors are visible; the refresh button works.
 
-**Given** налаштування
-**When** задаю власні межі
-**Then** статистика перераховується
+#### Acceptance criteria
+- **AC1.** All stories NOL-30…NOL-31 are done.
+- **AC2.** Existing v1 widgets keep working after the update.
 
-**Given** вибрано однакові початок і кінець
-**Then** показується помилка валідації
+#### Technical notes
+- `SelectSubgroupIntent` uses a fixed `SubgroupOption` `AppEnum` (12 subgroups) → needs an `AppEntity` + `EntityQuery` over `PlaceStore`.
 
-## Epic 5: Режим подорожі
+#### Prototype
+TBD — Claude artifact prototype
 
-Користувач без збереження переглядає будь-яку область і підчергу та бачить стан на час приїзду.
+### NOL-30: 6.1 Choose a place in a widget
+**Type:** Story · **Epic:** NOL-6 · **Sprint:** Sprint 2 · **Status:** To Do
 
-### Story 5.1: Перегляд без збереження
+#### Description
+As Bohdan, I want to pick a place for each widget, so that I can have Home and Work on my screen at the same time.
 
-As a Богдан,
-I want швидко переглянути графік будь-якої області й підчерги,
-So that не створювати місце заради разової перевірки.
+#### Expected behavior
+- «Змінити віджет» (Edit widget) lists my places; the widget shows the chosen place in all sizes.
+- v1 widgets configured with a subgroup keep working.
+- If the place is deleted, the widget says «Місце видалено, оберіть інше» (Place deleted, choose another).
 
-**Acceptance Criteria:**
+#### Flows
+1. Long-press widget → «Змінити віджет» → place list (from `PlaceStore`).
+2. Pick a place → timeline reloads for that place.
+3. Old widget with only a subgroup → resolve to the place with that subgroup, else show the subgroup directly.
 
-**Given** екран «Подорож»
-**When** обираю область, чергу й підчергу
-**Then** бачу графік без створення місця
+#### Acceptance criteria
+- **AC1.** Given widget configuration, When I pick a place from the list, Then the widget shows its schedule (small, medium, large).
+- **AC2.** Given a v1 widget configured with a subgroup, Then it keeps working after migration.
+- **AC3.** Given the place was deleted, Then the widget shows «Місце видалено, оберіть інше».
 
-**Given** переглянув графік
-**When** натискаю «Зберегти як місце»
-**Then** місце створюється з цими параметрами
+#### Technical notes
+- New `PlaceEntity: AppEntity` + `PlaceQuery: EntityQuery`; new `SelectPlaceIntent`. Keep the old `subgroup` parameter for backward compatibility (or keep the old widget kind alongside a new one).
+- `SubgroupProvider` → `PlaceProvider`; `WidgetTimelinePlanner` stays as is.
+- Depends on: NOL-10, NOL-12.
 
-### Story 5.2: Стан на час приїзду
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want ввести час приїзду або тривалість поїздки,
-So that знати, чи буде світло на місці.
+### NOL-31: 6.2 Widget states
+**Type:** Story · **Epic:** NOL-6 · **Sprint:** Sprint 2 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want the widget to show «застаріло» and errors, and a button that refreshes data, so that I can trust the widget.
 
-**Given** обрана підчерга
-**When** вводжу час приїзду або тривалість від зараз
-**Then** бачу стан на цей момент і найближчу зміну після нього
+#### Expected behavior
+- Stale data (older than 1 hour) shows a warning; on source error the last schedule is shown with a mark; the refresh button reloads.
 
-**Given** приїзд після півночі
-**Then** використовується графік наступного дня або «невідомо»
+#### Acceptance criteria
+- **AC1.** Given data older than 1 hour, Then the widget shows a «застаріло» warning.
+- **AC2.** Given a source error, Then the last schedule is shown with a mark, not an empty widget.
+- **AC3.** Given I tap the refresh button, Then a refresh runs and the widget reloads.
 
-## Epic 6: Віджети для моїх місць
+#### Technical notes
+- Mostly exists in v1 (`RefreshScheduleIntent`, `StaleWarningLabel`); verify per-place after NOL-30 and the 1-hour threshold from NOL-16 (`AppConfig.staleAfter`).
+- Depends on: NOL-30.
 
-Віджети прив'язані до збережених місць.
+#### Prototype
+TBD — Claude artifact prototype
 
-### Story 6.1: Вибір місця у віджеті
+---
 
-As a Богдан,
-I want вибрати місце для кожного віджета,
-So that на екрані були Дім і Робота одночасно.
+## NOL-7: Epic 7: My look: colors
+**Type:** Epic · **Sprint:** Sprint 6 · **Status:** To Do · **FRs:** FR20
 
-**Acceptance Criteria:**
+#### Description
+Bohdan picks the colors for «Світло є» and «Відключення» with a color picker or presets (including color-blind friendly ones) and can reset them.
 
-**Given** налаштування віджета
-**When** вибираю місце зі списку
-**Then** віджет показує його графік (малий, середній, великий)
+#### Expected behavior
+- Colors apply everywhere: app and widgets, light and dark themes.
 
-**Given** віджет із v1 з підчергою
-**Then** він продовжує працювати після міграції
+#### Acceptance criteria
+- **AC1.** All stories NOL-32…NOL-34 are done.
+- **AC2.** Presets are checked for contrast in light and dark themes.
 
-**Given** місце видалено
-**Then** віджет показує «Місце видалено, оберіть інше»
+#### Technical notes
+- Colors are hard-coded in `Shared/UI/SharedViews.swift` (`softGreen`, `softRed`, `PowerState.color`) → read from a `ColorSettings` in the App Group so widgets see them.
 
-### Story 6.2: Стани віджета
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want щоб віджет показував «застаріло» й помилки, а кнопка оновлювала дані,
-So that довіряти віджету.
+### NOL-32: 7.1 Pick colors with a picker
+**Type:** Story · **Epic:** NOL-7 · **Sprint:** Sprint 6 · **Status:** To Do
 
-**Acceptance Criteria:**
+#### Description
+As Bohdan, I want to choose the color for «Світло є» and «Відключення», so that schedules are easy for me to read.
 
-**Given** дані старші за 1 годину
-**Then** віджет показує попередження «застаріло»
+#### Expected behavior
+- Settings → «Кольори» (Colors) with a `ColorPicker` per state; changes show immediately in the app and widgets.
 
-**Given** помилка джерела
-**Then** показується останній графік із позначкою, а не порожній віджет
+#### Acceptance criteria
+- **AC1.** Given color settings, When I change a color with the picker, Then it is visible immediately in the app and in widgets.
+- **AC2.** Given light and dark themes, Then the color is stored for both themes.
 
-**Given** натискаю кнопку оновлення
-**Then** запускається оновлення й віджет перезавантажується
+#### Technical notes
+- Store colors as hex/RGBA per theme in the App Group; `PowerState.color` reads them with fallbacks to current defaults.
+- Reload widget timelines on change.
 
-## Epic 7: Мій вигляд: кольори
+#### Prototype
+TBD — Claude artifact prototype
 
-Користувач налаштовує кольори станів.
+### NOL-33: 7.2 Color presets
+**Type:** Story · **Epic:** NOL-7 · **Sprint:** Sprint 6 · **Status:** To Do
 
-### Story 7.1: Вибір кольорів через picker
+#### Description
+As Bohdan, I want to choose a ready-made preset, so that I quickly get a good combination.
 
-As a Богдан,
-I want вибрати колір для «є світло» і «немає світла»,
-So that графіки були розбірливими для мене.
+#### Expected behavior
+- Several presets, including color-blind friendly ones; choosing one applies to the app and widgets.
 
-**Acceptance Criteria:**
+#### Acceptance criteria
+- **AC1.** Given the colors screen, Then there are several presets, including ones for color blindness.
+- **AC2.** Given a preset is chosen, Then the colors apply to the app and widgets.
 
-**Given** налаштування кольорів
-**When** змінюю колір color picker-ом
-**Then** зміна одразу видна в застосунку й у віджетах
+#### Technical notes
+- **Open question:** exact preset list (PRD §9) — e.g. Default (soft green/red), High contrast, Blue/Orange (deuteranopia-safe).
+- Depends on: NOL-32.
 
-**Given** світла й темна теми
-**Then** колір збережено для обох тем
+#### Prototype
+TBD — Claude artifact prototype
 
-### Story 7.2: Пресети кольорів
+### NOL-34: 7.3 Reset colors
+**Type:** Story · **Epic:** NOL-7 · **Sprint:** Sprint 6 · **Status:** To Do
 
-As a Богдан,
-I want обрати готовий пресет,
-So that швидко отримати гарне поєднання.
+#### Description
+As Bohdan, I want to reset colors to the defaults, so that I can go back to the original look.
 
-**Acceptance Criteria:**
+#### Expected behavior
+- «Скинути» (Reset) restores the default colors.
 
-**Given** екран кольорів
-**Then** є кілька пресетів, у тому числі для дальтоніків
+#### Acceptance criteria
+- **AC1.** Given changed colors, When I tap «Скинути», Then the default colors are restored.
 
-**Given** обрано пресет
-**Then** кольори застосовуються до застосунку й віджетів
+#### Technical notes
+- Remove the stored overrides so defaults from `SharedViews.swift` apply again.
+- Depends on: NOL-32.
 
-### Story 7.3: Скидання кольорів
+#### Prototype
+TBD — Claude artifact prototype
 
-As a Богдан,
-I want скинути кольори до стандартних,
-So that повернутися до початкового вигляду.
+---
 
-**Acceptance Criteria:**
+## NOL-8: Epic 8: Brand and versions
+**Type:** Epic · **Sprint:** Sprint 1, Sprint 6 · **Status:** In Progress · **FRs:** FR21, FR22
 
-**Given** змінені кольори
-**When** натискаю «Скинути»
-**Then** повертаються стандартні кольори
+#### Description
+The app has its own name (NoLight), logo, icon and launch screen, and its version changes only when the app code changes.
 
-## Epic 8: Бренд і версії
+#### Expected behavior
+- NoLight branding on the home screen, launch screen and widget gallery.
+- Build number grows only with app-code commits and is shown in settings.
 
-### Story 8.1: Логотип та іконка застосунку
+#### Acceptance criteria
+- **AC1.** All stories NOL-35…NOL-38 are done.
 
-As a Богдан,
-I want мати власний логотип та іконку,
-So that застосунок виглядав завершеним.
+#### Technical notes
+- Versioning: `scripts/set-version.sh` (post-build script for app and widget).
 
-**Acceptance Criteria:**
+#### Prototype
+TBD — Claude artifact prototype
 
-**Given** збірка
-**Then** на домашньому екрані показується нова іконка
-**And** набір іконок покриває всі потрібні розміри iOS 17+
+### NOL-35: 8.1 Logo and app icon
+**Type:** Story · **Epic:** NOL-8 · **Sprint:** Sprint 6 · **Status:** To Do
 
-### Story 8.2: Заставка запуску та іконка віджета
+#### Description
+As Bohdan, I want my own logo and app icon, so that the app looks finished.
 
-As a Богдан,
-I want бачити логотип при запуску і в галереї віджетів,
-So that бренд був послідовним.
+#### Expected behavior
+- A NoLight logo and an app icon on the home screen.
 
-**Acceptance Criteria:**
+#### Acceptance criteria
+- **AC1.** Given a build, Then the new icon is shown on the home screen.
+- **AC2.** The icon set covers all sizes required by iOS 17+ (single 1024×1024 + dark and tinted variants).
 
-**Given** запуск застосунку
-**Then** показується заставка з логотипом без мигтіння
+#### Technical notes
+- There is no `.xcassets` yet → add `App/Assets.xcassets/AppIcon.appiconset` and reference it from `project.yml` (`ASSETCATALOG_COMPILER_APPICON_NAME`).
+- Logo design is done as a Claude artifact first, then exported to PNG.
 
-**Given** галерея віджетів
-**Then** відображається іконка віджета
+#### Prototype
+TBD — Claude artifact prototype
 
-### Story 8.3: Версіонування лише за зміною коду
+### NOL-36: 8.2 Launch screen and widget icon
+**Type:** Story · **Epic:** NOL-8 · **Sprint:** Sprint 6 · **Status:** To Do
 
-As a Богдан,
-I want щоб версія змінювалась лише коли змінився код застосунку,
-So that зміни документації не збільшували версію.
+#### Description
+As Bohdan, I want to see the logo at launch and in the widget gallery, so that the brand is consistent.
 
-**Acceptance Criteria:**
+#### Expected behavior
+- Launch screen with the logo, no flicker; the widget gallery shows the widget's icon/preview.
 
-**Given** пуш лише з `_bmad`, документацією чи README
-**Then** номер збірки не змінюється
+#### Acceptance criteria
+- **AC1.** Given app launch, Then a launch screen with the logo is shown without flicker.
+- **AC2.** Given the widget gallery, Then the widget icon is shown.
 
-**Given** пуш, що змінює `App/`, `Shared/`, `Widget/`, `project.yml` або ресурси
-**Then** номер збірки збільшується
+#### Technical notes
+- `project.yml` has `UILaunchScreen: {}` → set `UIImageName` / `UIColorName` from the asset catalog.
+- Depends on: NOL-35.
 
-**Given** налаштування
-**Then** версія видна в розділі «Версія»
+#### Prototype
+TBD — Claude artifact prototype
 
-## Epic 9: Live Activity (необов'язковий)
+### NOL-37: 8.3 Version changes only with code changes
+**Type:** Story · **Epic:** NOL-8 · **Sprint:** Sprint 1 · **Status:** In Review
 
-### Story 9.1: Відлік до наступної зміни
+#### Description
+As Bohdan, I want the version to change only when app code changes, so that documentation changes don't bump it.
 
-As a Богдан,
-I want бачити відлік на екрані блокування,
-So that не відкривати застосунок.
+#### Expected behavior
+- Commits touching only `_bmad`, docs or README keep the build number; commits touching app code increase it.
+- Settings show the version in «Версія» (Version).
 
-**Acceptance Criteria:**
+#### Acceptance criteria
+- **AC1.** Given a push with only `_bmad`, docs or README changes, Then the build number does not change.
+- **AC2.** Given a push that changes `App/`, `Shared/`, `Widget/`, `project.yml` or resources, Then the build number increases.
+- **AC3.** Given settings, Then the version is visible in «Версія».
 
-**Given** вибране місце
-**When** запускаю Live Activity
-**Then** на екрані блокування видно час до наступної зміни
+#### Technical notes
+- Implemented: `scripts/set-version.sh` counts `git rev-list --count HEAD -- App Shared Widget project.yml VERSION scripts/set-version.sh`; version = `VERSION`.count.
+- Verified on git history (docs commits keep the number, code commits bump it). **Remaining:** check in Xcode that «Налаштування → Версія» shows «1.0.4 (збірка 4)» on branch `chore/rename-to-nolight`.
 
-**Given** минуло 8 годин
-**Then** активність завершується й пропонується запустити знову
+#### Prototype
+N/A — no UI
+
+### NOL-38: 8.4 Rename the app to NoLight
+**Type:** Story · **Epic:** NOL-8 · **Sprint:** Sprint 1 · **Status:** In Review
+
+#### Description
+As Bohdan, I want the app and project to be called NoLight like the repository, so that names don't get confused later.
+
+#### Expected behavior
+- The home-screen name and widget gallery show «NoLight».
+- Targets, scheme, bundle IDs and App Group use NoLight. Data-source names (Черкасиобленерго) stay.
+
+#### Acceptance criteria
+- **AC1.** Given a build, Then the name under the icon and in the widget gallery is «NoLight».
+- **AC2.** Targets `NoLight`, `NoLightWidget`, `NoLightTests`, scheme `NoLight`, bundle ID `com.bohdanol.NoLight`, App Group `group.com.bohdanol.NoLight`.
+- **AC3.** Data-source names and URLs (cherkasyoblenergo.com) are unchanged.
+
+#### Technical notes
+- Done on branch `chore/rename-to-nolight` (commit d96eab9). Remaining: push, PR into `main`, `xcodegen generate`, choose Team for both targets so the new App Group is registered.
+- New bundle ID = new app on the device: the old «Світло Черкаси» must be removed manually and widgets re-added.
+
+#### Prototype
+N/A — no UI
+
+---
+
+## NOL-9: Epic 9: Live Activity (optional, after everything)
+**Type:** Epic · **Sprint:** Sprint 7 · **Status:** To Do · **FRs:** FR16
+
+#### Description
+A countdown to the next power change on the Lock Screen. Lower priority than notifications (PRD §6.2: outside MVP).
+
+#### Expected behavior
+- A Live Activity for a chosen place with a countdown to the next change.
+
+#### Acceptance criteria
+- **AC1.** Story NOL-39 is done.
+
+#### Technical notes
+- ActivityKit; Live Activities end after 8 hours (iOS limit) — 12 h max on Lock Screen.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-39: 9.1 Countdown to the next change
+**Type:** Story · **Epic:** NOL-9 · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+As Bohdan, I want a countdown on the Lock Screen, so that I don't have to open the app.
+
+#### Expected behavior
+- From place details I start a Live Activity; the Lock Screen shows time until the next change.
+
+#### Acceptance criteria
+- **AC1.** Given a selected place, When I start the Live Activity, Then the Lock Screen shows the time until the next change.
+- **AC2.** Given 8 hours have passed, Then the activity ends and offers to start again.
+
+#### Technical notes
+- `ActivityAttributes` with place name + next change `Date`; use `Text(timerInterval:)` so it updates without pushes (no server).
+- Needs `NSSupportsLiveActivities = YES` in `project.yml`; Live Activity UI lives in the widget extension.
+
+#### Prototype
+TBD — Claude artifact prototype
