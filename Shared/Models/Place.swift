@@ -45,11 +45,19 @@ struct Place: Identifiable, Hashable, Codable, Sendable {
 
     /// Назва за замовчуванням для місця, створеного з підчерги.
     static func defaultName(for subgroup: Subgroup) -> String { "Підчерга \(subgroup.id)" }
+
+    static let maxNameLength = 40
+
+    /// Обрізає пробіли; nil — якщо назва порожня або довша за `maxNameLength`.
+    static func normalizedName(_ raw: String) -> String? {
+        let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty || name.count > maxNameLength ? nil : name
+    }
 }
 
 /// Чернетка форми «Додати місце»: перевірка й створення місця (без UI, тестується окремо).
 struct PlaceDraft: Equatable, Sendable {
-    static let maxNameLength = 40
+    static let maxNameLength = Place.maxNameLength
 
     var name = ""
     var region: Region = .cherkasy
@@ -60,8 +68,7 @@ struct PlaceDraft: Equatable, Sendable {
     var subgroup: Subgroup? { Subgroup(queue: queue, sub: sub) }
 
     var isValid: Bool {
-        !trimmedName.isEmpty && trimmedName.count <= Self.maxNameLength
-            && region.hasScheduleData && subgroup != nil
+        Place.normalizedName(name) != nil && region.hasScheduleData && subgroup != nil
     }
 
     func makePlace(id: UUID = UUID()) -> Place? {

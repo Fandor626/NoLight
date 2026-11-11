@@ -136,3 +136,33 @@ final class PlaceDraftTests: XCTestCase {
         XCTAssertNotEqual(pa?.id, pb?.id)
     }
 }
+
+final class PlaceManagementTests: XCTestCase {
+    func testNormalizedNameTrimsAndValidates() {
+        XCTAssertEqual(Place.normalizedName("  Робота  "), "Робота")
+        XCTAssertNil(Place.normalizedName("   "))
+        XCTAssertNil(Place.normalizedName(String(repeating: "x", count: Place.maxNameLength + 1)))
+        XCTAssertEqual(Place.normalizedName(String(repeating: "x", count: Place.maxNameLength))?.count, Place.maxNameLength)
+    }
+
+    func testReorderedPlacesPersistInOrder() {
+        let suite = "nl-order-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let a = Place(name: "Дім", subgroup: Subgroup(queue: 1, sub: 1)!)
+        let b = Place(name: "Робота", subgroup: Subgroup(queue: 2, sub: 1)!)
+        let c = Place(name: "Батьки", subgroup: Subgroup(queue: 3, sub: 2)!)
+        let store = PlaceStore(defaults: defaults)
+        store.places = [a, b, c]
+        store.places = [c, a, b]
+        XCTAssertEqual(PlaceStore(defaults: defaults).places.map(\.name), ["Батьки", "Дім", "Робота"])
+    }
+
+    func testRenameKeepsIdentity() {
+        var place = Place(name: "Дім", subgroup: Subgroup(queue: 1, sub: 1)!)
+        let id = place.id
+        place.name = Place.normalizedName(" Квартира ")!
+        XCTAssertEqual(place.id, id)
+        XCTAssertEqual(place.name, "Квартира")
+    }
+}

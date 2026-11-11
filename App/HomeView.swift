@@ -4,6 +4,9 @@ struct HomeView: View {
     @Environment(AppState.self) private var state
     @State private var showingAddPlace = false
     @State private var lastAddedID: UUID?
+    @State private var showingManage = false
+    @State private var renaming: Place?
+    @State private var deleting: Place?
 
     var body: some View {
         NavigationStack {
@@ -26,7 +29,10 @@ struct HomeView: View {
                                     .buttonStyle(.plain)
                                     .id(place.id)
                                     .contextMenu {
-                                        Button(role: .destructive) { state.removePlace(place) } label: {
+                                        Button { renaming = place } label: {
+                                            Label("Перейменувати", systemImage: "pencil")
+                                        }
+                                        Button(role: .destructive) { deleting = place } label: {
                                             Label("Видалити", systemImage: "trash")
                                         }
                                     }
@@ -46,6 +52,11 @@ struct HomeView: View {
             .navigationTitle("Світло")
             .navigationDestination(for: Place.self) { SubgroupDetailView(subgroup: $0.subgroup) }
             .toolbar {
+                if !state.places.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Керувати") { showingManage = true }
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingAddPlace = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("Додати місце")
@@ -57,6 +68,8 @@ struct HomeView: View {
                     lastAddedID = place.id
                 }
             }
+            .sheet(isPresented: $showingManage) { ManagePlacesView() }
+            .placeActions(renaming: $renaming, deleting: $deleting)
         }
     }
 }
