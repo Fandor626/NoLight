@@ -85,6 +85,25 @@ final class ScheduleLogicTests: XCTestCase {
         XCTAssertEqual(d.state(atMinute: 600), .outage)
     }
 
+    // NOL-13: «Завтра» без графіка показує повідомлення, а не порожню шкалу.
+    func testTomorrowNotPublishedHasPlaceholderInsteadOfTimeline() {
+        let p = status(realSnapshot(), Fixtures.sg11, at: Fixtures.kyiv(2026, 11, 10, 12, 0))
+        XCTAssertEqual(p.tomorrow.kind, .notPublished)
+        XCTAssertEqual(p.tomorrow.kind.placeholderTitle, "Графік ще не опублікований")
+        XCTAssertNotNil(p.tomorrow.kind.placeholderMessage)
+        XCTAssertNil(p.today.kind.placeholderTitle)
+        XCTAssertNil(DayScheduleKind.published.placeholderMessage)
+    }
+
+    // NOL-13: інтервал через північ видно на обох добах.
+    func testMidnightCrossingOutageVisibleOnBothDays() {
+        let s = Fixtures.snapshot(posts: [day: ["1.1": [Fixtures.r(1380, 1440)]], next: ["1.1": [Fixtures.r(0, 120)]]],
+                                  fetchedAt: Fixtures.kyiv(2026, 11, 10, 20, 0))
+        let p = status(s, Fixtures.sg11, at: Fixtures.kyiv(2026, 11, 10, 21, 0))
+        XCTAssertEqual(p.today.intervals.last, .init(start: 1380, end: 1440, state: .outage))
+        XCTAssertEqual(p.tomorrow.intervals.first, .init(start: 0, end: 120, state: .outage))
+    }
+
     func testNotPublishedDayIsUnknownNeverAvailable() {
         let s = Fixtures.snapshot(posts: [next: ["1.1": Fixtures.outages11]], fetchedAt: Fixtures.kyiv(2026, 11, 10, 11, 0))
         let p = status(s, Fixtures.sg11, at: Fixtures.kyiv(2026, 11, 10, 12, 0))

@@ -1,12 +1,30 @@
 import SwiftUI
 
-struct SubgroupDetailView: View {
-    let subgroup: Subgroup
+/// Деталі місця: стан зараз, перемикач «Сьогодні / Завтра», шкала й інтервали.
+struct PlaceDetailView: View {
+    let placeID: UUID
     @Environment(AppState.self) private var state
     @State private var showTomorrow = false
 
+    /// Актуальна версія місця (назва могла змінитися); nil — якщо місце видалено.
+    private var place: Place? { state.places.first { $0.id == placeID } }
+
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 30)) { context in
+        Group {
+            if let place {
+                content(place: place)
+            } else {
+                ContentUnavailableView("Місце видалено", systemImage: "mappin.slash")
+            }
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .navigationTitle(place?.name ?? "")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func content(place: Place) -> some View {
+        let subgroup = place.subgroup
+        return TimelineView(.periodic(from: .now, by: 30)) { context in
             let p = SubgroupPresentation(snapshot: state.snapshot, subgroup: subgroup, now: context.date)
             let day = showTomorrow ? p.tomorrow : p.today
             let dayDate = showTomorrow
@@ -20,6 +38,7 @@ struct SubgroupDetailView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             SubgroupBadge(text: subgroup.id)
+                            Text("\(place.region.title) обл.").font(.subheadline).foregroundStyle(.secondary)
                             Spacer()
                             Text(KyivTime.longDateString(context.date).capitalized)
                                 .font(.subheadline).foregroundStyle(.secondary)
@@ -49,11 +68,20 @@ struct SubgroupDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(showTomorrow ? "Завтра, " + KyivTime.longDateString(dayDate) : "Графік на сьогодні")
                             .font(.headline)
-                        TimelineBarView(intervals: day.intervals,
-                                        nowMinute: showTomorrow ? nil : p.minuteNow,
-                                        barHeight: 22,
-                                        hourLabels: [0, 3, 6, 9, 12, 15, 18, 21, 24])
-                        Legend()
+                        if let title = day.kind.placeholderTitle {
+                            // Замість порожньої сірої шкали — зрозуміле повідомлення.
+                            Label(title, systemImage: "calendar.badge.clock")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 8)
+                        } else {
+                            TimelineBarView(intervals: day.intervals,
+                                            nowMinute: showTomorrow ? nil : p.minuteNow,
+                                            barHeight: 22,
+                                            hourLabels: [0, 3, 6, 9, 12, 15, 18, 21, 24])
+                            Legend()
+                        }
                     }
                     .card()
 
@@ -72,9 +100,6 @@ struct SubgroupDetailView: View {
             }
             .refreshable { await state.refresh() }
         }
-        .background(Color(uiColor: .systemGroupedBackground))
-        .navigationTitle("Підчерга \(subgroup.id)")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -97,7 +122,7 @@ struct IntervalListView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Інтервали").font(.headline)
-            if day.kind != .published {
+            if let message = day.kind.placeholderMessage {
                 Text(message).font(.subheadline).foregroundStyle(.secondary)
             } else {
                 ForEach(Array(day.intervals.enumerated()), id: \.offset) { _, i in
@@ -111,16 +136,6 @@ struct IntervalListView: View {
                     .font(.subheadline)
                 }
             }
-        }
-    }
-
-    private var message: String {
-        switch day.kind {
-        case .notPublished: return "Графік на цю добу ще не опубліковано. Це не означає, що відключень не буде."
-        case .subgroupNotListed: return "У опублікованому графіку немає цієї підчерги."
-        case .parseFailed: return "Графік опубліковано, але програма не змогла його розпізнати."
-        case .noData: return "Немає актуальних даних. Оновіть графік, коли з’явиться інтернет."
-        case .published: return ""
         }
     }
 

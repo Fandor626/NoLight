@@ -47,6 +47,30 @@ enum DayScheduleKind: String, Codable, Sendable {
     case noData
 }
 
+extension DayScheduleKind {
+    /// Короткий заголовок замість шкали, коли графіка немає (nil для опублікованого).
+    var placeholderTitle: String? {
+        switch self {
+        case .published: return nil
+        case .notPublished: return "Графік ще не опублікований"
+        case .subgroupNotListed: return "Підчерги немає в графіку"
+        case .parseFailed: return "Графік не розпізнано"
+        case .noData: return "Немає актуальних даних"
+        }
+    }
+
+    /// Пояснення під заголовком.
+    var placeholderMessage: String? {
+        switch self {
+        case .published: return nil
+        case .notPublished: return "Графік на цю добу ще не опубліковано. Це не означає, що відключень не буде."
+        case .subgroupNotListed: return "У опублікованому графіку немає цієї підчерги."
+        case .parseFailed: return "Графік опубліковано, але програма не змогла його розпізнати."
+        case .noData: return "Немає актуальних даних. Оновіть графік, коли з’явиться інтернет."
+        }
+    }
+}
+
 /// Графік однієї підчерги на одну добу. `intervals` завжди повністю покривають 0...1440.
 struct DaySchedule: Codable, Equatable, Sendable {
     let dateKey: String

@@ -50,7 +50,7 @@ struct HomeView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("Світло")
-            .navigationDestination(for: Place.self) { SubgroupDetailView(subgroup: $0.subgroup) }
+            .navigationDestination(for: Place.self) { PlaceDetailView(placeID: $0.id) }
             .toolbar {
                 if !state.places.isEmpty {
                     ToolbarItem(placement: .topBarLeading) {
