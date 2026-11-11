@@ -2,48 +2,61 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(AppState.self) private var state
-    @State private var showingPicker = false
+    @State private var showingAddPlace = false
+    @State private var lastAddedID: UUID?
 
     var body: some View {
         NavigationStack {
             TimelineView(.periodic(from: .now, by: 30)) { context in
-                ScrollView {
-                    VStack(spacing: 12) {
-                        DataStatusBanners(state: state, now: context.date)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            DataStatusBanners(state: state, now: context.date)
 
-                        if state.places.isEmpty {
-                            EmptyStateView { showingPicker = true }
-                        } else {
-                            ForEach(state.places) { place in
-                                NavigationLink(value: place) {
-                                    PlaceCardView(
-                                        name: place.name,
-                                        presentation: SubgroupPresentation(snapshot: state.snapshot,
-                                                                           subgroup: place.subgroup, now: context.date))
-                                }
-                                .buttonStyle(.plain)
-                                .contextMenu {
-                                    Button(role: .destructive) { state.removePlace(place) } label: {
-                                        Label("Видалити", systemImage: "trash")
+                            if state.places.isEmpty {
+                                EmptyStateView { showingAddPlace = true }
+                            } else {
+                                ForEach(state.places) { place in
+                                    NavigationLink(value: place) {
+                                        PlaceCardView(
+                                            name: place.name,
+                                            presentation: SubgroupPresentation(snapshot: state.snapshot,
+                                                                               subgroup: place.subgroup, now: context.date))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .id(place.id)
+                                    .contextMenu {
+                                        Button(role: .destructive) { state.removePlace(place) } label: {
+                                            Label("Видалити", systemImage: "trash")
+                                        }
                                     }
                                 }
                             }
                         }
+                        .padding()
                     }
-                    .padding()
+                    .refreshable { await state.refresh() }
+                    .onChange(of: lastAddedID) { _, id in
+                        guard let id else { return }
+                        withAnimation { proxy.scrollTo(id, anchor: .bottom) }
+                    }
                 }
-                .refreshable { await state.refresh() }
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("Світло")
             .navigationDestination(for: Place.self) { SubgroupDetailView(subgroup: $0.subgroup) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingPicker = true } label: { Image(systemName: "plus") }
+                    Button { showingAddPlace = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("Додати місце")
                 }
             }
-            .sheet(isPresented: $showingPicker) { SubgroupPickerView() }
+            .sheet(isPresented: $showingAddPlace) {
+                AddPlaceView { place in
+                    state.addPlace(place)
+                    lastAddedID = place.id
+                }
+            }
         }
     }
 }

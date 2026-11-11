@@ -5,7 +5,7 @@ branch: feature/NOL-10-home-screen-places-v1-migration
 ---
 # Story 1.1: Home screen with places list (v1 migration)
 
-Status: review
+Status: ready-for-testing
 
 ## Story
 
