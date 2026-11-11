@@ -1,0 +1,74 @@
+# generated: 2026-11-11 13:52
+# last_updated: 2026-11-11 13:52
+# project: CherkasyLight
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+#
+# Статуси історій: backlog -> ready-for-dev -> in-progress -> review -> done
+# Епіки: backlog -> in-progress -> done. Ретроспективи: optional <-> done.
+# Story 8-3 у review: логіку скрипта перевірено в терміналі, але не в Xcode.
+
+generated: 2026-11-11 13:52
+last_updated: 2026-11-11 13:52
+project: CherkasyLight
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: backlog
+  1-1-holovnyy-ekran-zi-spyskom-mists-z-mihratsiyeyu-v1: backlog
+  1-2-dodaty-mistse: backlog
+  1-3-keruvaty-mistsyamy: backlog
+  1-4-detali-mistsya-sohodni-ta-zavtra: backlog
+  1-5-istoriya-za-14-dniv: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-vybir-bud-yakoyi-oblasti-z-api: backlog
+  2-2-mitky-doviry-ta-svizhosti: backlog
+  2-3-vybir-dzherela-dlya-cherkas: backlog
+  2-4-ekran-porivnyannya-dzherel: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-rezhym-onovlennya: backlog
+  3-2-fonove-onovlennya: backlog
+  3-3-poperedzhennya-pered-vidklyuchennyam: backlog
+  3-4-poperedzhennya-pered-povernennyam-svitla: backlog
+  3-5-spovishchennya-pro-zminu-hrafika: backlog
+  3-6-istoriya-zmin-hrafika: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-statystyka-za-period: backlog
+  4-2-rozbyvka-nich-i-den: backlog
+  4-3-nalashtuvannya-mezh-nochi: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-perehlyad-bez-zberezhennya: backlog
+  5-2-stan-na-chas-pryyizdu: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-vybir-mistsya-u-vidzheti: backlog
+  6-2-stany-vidzheta: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-vybir-koloriv-cherez-picker: backlog
+  7-2-presety-koloriv: backlog
+  7-3-skydannya-koloriv: backlog
+  epic-7-retrospective: optional
+
+  epic-8: in-progress
+  8-1-lohotyp-ta-ikonka-zastosunku: backlog
+  8-2-zastavka-zapusku-ta-ikonka-vidzheta: backlog
+  8-3-versionuvannya-lyshe-za-zminoyu-kodu: review
+  epic-8-retrospective: optional
+
+  epic-9: backlog
+  9-1-vidlik-do-nastupnoyi-zminy: backlog
+  epic-9-retrospective: optional
