@@ -6,3 +6,6 @@ DerivedData/
 # BMad agent skills and Claude Code local config (installed locally, not project code)
 .claude/
 .agents/
+
+# Локальні скіли (orchestrator, dev-story): ніколи не комітити
+_local-skills/
