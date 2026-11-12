@@ -32,7 +32,8 @@ enum BackgroundRefresh {
                 }
             }
         }
-        // Після оновлення — переплануємо попередження за новими графіками (NOL-21).
+        // Після оновлення — сповіщення про зміни графіка (NOL-23) і перепланування попереджень (NOL-21).
+        await ScheduleChangeNotifier.processFromStores()
         await NotificationScheduler.replanFromStores()
     }
 }

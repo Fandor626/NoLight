@@ -96,6 +96,9 @@ final class AppState {
                 break
             }
         }
+        // Зміни графіка (NOL-23) — до перепланування попереджень.
+        let snaps = snapshots
+        await ScheduleChangeNotifier.process(places: places, snapshot: { snaps[$0.sourceKey] })
         await replanNotifications()
     }
 
@@ -148,6 +151,10 @@ final class AppState {
               let index = places.firstIndex(where: { $0.id == place.id }),
               places[index].source != source else { return }
         places[index].source = source
+        // Інше джерело — інший графік: не вважаємо це «зміною графіка» (NOL-23).
+        var seen = ScheduleSeenStore.shared.seen
+        seen[place.id.uuidString] = nil
+        ScheduleSeenStore.shared.seen = seen
         save()
         let key = places[index].sourceKey
         Task {
@@ -171,6 +178,20 @@ final class AppState {
     func replanNotifications() async {
         let snaps = snapshots
         await NotificationScheduler.replan(places: places, snapshot: { snaps[$0.sourceKey] })
+    }
+
+    /// Сповіщення про зміну графіка місця (NOL-23).
+    func setNotifyScheduleChanges(_ on: Bool, for place: Place) {
+        guard let index = places.firstIndex(where: { $0.id == place.id }) else { return }
+        places[index].notifyScheduleChanges = on
+        if on {
+            Task {
+                await NotificationScheduler.requestAuthorization()
+                save()
+            }
+        } else {
+            save()
+        }
     }
 
     /// Вмикає (хвилини) або вимикає (nil) попередження перед поверненням світла (NOL-22).
