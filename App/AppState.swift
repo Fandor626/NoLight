@@ -105,6 +105,30 @@ final class AppState {
         await replanNotifications()
     }
 
+    // MARK: - Подорож (NOL-28): графік будь-якої області без створення місця
+
+    private(set) var previewLoading: Set<ScheduleSourceKey> = []
+
+    func snapshot(forKey key: ScheduleSourceKey) -> ScheduleSnapshot? { snapshots[key] }
+    func error(forKey key: ScheduleSourceKey) -> ScheduleError? { errors[key] }
+
+    /// Показує кеш одразу, потім оновлює лише це джерело. Місця не змінюються й не зберігаються.
+    func loadPreview(_ key: ScheduleSourceKey) async {
+        guard !previewLoading.contains(key) else { return }
+        previewLoading.insert(key)
+        defer { previewLoading.remove(key) }
+        let repo = repository(for: key)
+        if snapshots[key] == nil { snapshots[key] = await repo.cachedSnapshot() }
+        do {
+            snapshots[key] = try await repo.refresh()
+            errors[key] = nil
+        } catch is CancellationError {
+        } catch {
+            errors[key] = (error as? ScheduleError) ?? .serverUnavailable(status: nil)
+            snapshots[key] = await repo.cachedSnapshot()
+        }
+    }
+
     func addPlace(_ place: Place) {
         let isNewSource = !activeKeys.contains(place.sourceKey) || snapshots[place.sourceKey] == nil
         places.append(place)
