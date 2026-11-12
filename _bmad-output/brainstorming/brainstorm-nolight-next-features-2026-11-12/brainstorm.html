@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NoLight — що далі (brainstorm 12.11.2026)</title>
+<style>
+  :root { --bg:#0d1526; --panel:#16223d; --lit:#ffc93c; --dim:#4a5570; --text:#e8ecf5; --muted:#9aa5bd; --green:#4cab75; --red:#d46661; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 56px 24px 32px; text-align:center; background: radial-gradient(circle at 42% 40%, rgba(255,201,60,.22), transparent 55%), linear-gradient(#22345c, var(--bg)); }
+  header svg { width: 84px; height: 136px; }
+  h1 { font-size: 34px; margin: 16px 0 4px; letter-spacing: -.5px; }
+  header p { color: var(--muted); margin: 0; }
+  .counter { display:flex; gap:28px; justify-content:center; margin-top:22px; flex-wrap:wrap; }
+  .counter b { display:block; font-size:30px; color: var(--lit); }
+  .counter span { color: var(--muted); font-size: 13px; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px; }
+  h2 { font-size: 22px; margin: 40px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  /* timeline-style day strip */
+  .strip { display:flex; height: 14px; border-radius: 7px; overflow:hidden; margin: 10px 0 18px; }
+  .strip i { display:block; }
+  .picks { display:grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 12px; }
+  .pick { background: var(--panel); border-radius: 16px; padding: 16px; position: relative; overflow: hidden; }
+  .pick::before { content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background: linear-gradient(var(--lit), #ffb61e); }
+  .pick .n { font-size: 13px; color: var(--lit); font-weight: 700; }
+  .pick h3 { margin: 4px 0 6px; font-size: 17px; }
+  .pick p { margin:0; color: var(--muted); font-size: 14px; }
+  .themes { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 14px; }
+  .theme { background: var(--panel); border-radius: 18px; padding: 18px; }
+  .theme h3 { margin: 0 0 4px; font-size: 18px; }
+  .theme .why { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+  .bar { height: 8px; border-radius: 4px; background: #24314f; overflow: hidden; margin-bottom: 10px; }
+  .bar > i { display:block; height:100%; background: linear-gradient(90deg, var(--lit), #ffb61e); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: #22304f; color: var(--text); }
+  .chip.hot { background: rgba(255,201,60,.18); color: var(--lit); }
+  details { background: var(--panel); border-radius: 14px; padding: 12px 16px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  summary small { color: var(--muted); font-weight: 400; }
+  details ul { margin: 10px 0 2px; padding-left: 20px; color: #d3d9e6; }
+  details li { margin: 3px 0; font-size: 14.5px; }
+  .planned { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 12px; }
+  .planned .pick::before { background: linear-gradient(var(--green), #2f8f5a); }
+  footer { color: var(--muted); text-align:center; font-size: 13px; padding: 40px 24px 60px; }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="276 122 472 780" aria-hidden="true">
+    <defs>
+      <linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#FFB61E"/></linearGradient>
+      <clipPath id="a"><rect x="0" y="0" width="512" height="1024"/></clipPath>
+      <clipPath id="b"><rect x="512" y="0" width="512" height="1024"/></clipPath>
+    </defs>
+    <path d="M 596 132 L 286 572 L 486 572 L 424 892 L 738 440 L 536 440 Z" fill="url(#l)" clip-path="url(#a)"/>
+    <path d="M 596 132 L 286 572 L 486 572 L 424 892 L 738 440 L 536 440 Z" fill="#6B7691" clip-path="url(#b)"/>
+  </svg>
+  <h1>NoLight: що далі</h1>
+  <p>Brainstorm за поточною реалізацією · режим «Ideate for me» · 12.11.2026</p>
+  <div class="counter">
+    <div><b>96</b><span>ідей</span></div>
+    <div><b>11</b><span>технік</span></div>
+    <div><b>7</b><span>тем</span></div>
+    <div><b>5</b><span>рекомендованих кроків</span></div>
+  </div>
+</header>
+<main>
+  <h2>Уже заплановано тобою</h2>
+  <p class="sub">Ці три ідеї стають задачами в Jira окремо від brainstorm.</p>
+  <div class="planned">
+    <div class="pick"><span class="n">Live Activity</span><h3>Не зникає випадково</h3><p>Відлік прибирається лише із застосунку; якщо iOS його все ж прибрала — повертається.</p></div>
+    <div class="pick"><span class="n">Подорож</span><h3>Черга за адресою</h3><p>Вводиш адресу — застосунок сам визначає область, чергу й підчергу.</p></div>
+    <div class="pick"><span class="n">Apple Watch</span><h3>Одна картка на годиннику</h3><p>Обране місце, шкала «−2 год · зараз · +2 год», відлік до зміни.</p></div>
+  </div>
+
+  <h2>П’ять кроків, які я б зробив наступними</h2>
+  <div class="strip" aria-hidden="true">
+    <i style="flex:3;background:var(--green)"></i><i style="flex:2;background:var(--red)"></i><i style="flex:4;background:var(--green)"></i><i style="flex:1.5;background:var(--red)"></i><i style="flex:2;background:#3a4560"></i>
+  </div>
+  <div class="picks">
+    <div class="pick"><span class="n">1</span><h3>CI на GitHub Actions</h3><p>xcodebuild test на кожен PR + щоденна перевірка парсера на живих джерелах. Зараз жоден PR не збирався до мерджу.</p></div>
+    <div class="pick"><span class="n">2</span><h3>App Intents скрізь</h3><p>Siri, Shortcuts, Action Button, Control Center, віджети Lock Screen і StandBy — один шар, який потім використає й годинник.</p></div>
+    <div class="pick"><span class="n">3</span><h3>Спокійні сповіщення</h3><p>Ранковий дайджест, «графік на завтра опубліковано», тиха ніч, групування за місцем.</p></div>
+    <div class="pick"><span class="n">4</span><h3>Поділитися місцем</h3><p>Посилання або QR — батьки додають твоє місце в один дотик.</p></div>
+    <div class="pick"><span class="n">5</span><h3>Сигнал реальності</h3><p>Телефон заряджається → світло є. Плюс ручна позначка «зникло/з’явилося» → план проти реальності.</p></div>
+  </div>
+
+  <h2>Сім тем</h2>
+  <p class="sub">Смужка — моя оцінка цінності для тебе як щоденного користувача.</p>
+  <div class="themes">
+    <div class="theme"><h3>Фундамент</h3><p class="why">Знижує ризик усього іншого.</p><div class="bar"><i style="width:95%"></i></div>
+      <div class="chips"><span class="chip hot">macOS CI</span><span class="chip hot">Монітор парсера</span><span class="chip">Snapshot-тести віджетів</span><span class="chip">MetricKit</span><span class="chip">TestFlight</span></div></div>
+    <div class="theme"><h3>Видно скрізь</h3><p class="why">Не відкривати застосунок узагалі.</p><div class="bar"><i style="width:90%"></i></div>
+      <div class="chips"><span class="chip hot">Siri «Коли вимкнуть вдома?»</span><span class="chip hot">Lock Screen кільце</span><span class="chip">StandBy</span><span class="chip">Control Center</span><span class="chip">Action Button</span><span class="chip">Smart Stack</span></div></div>
+    <div class="theme"><h3>Сигнал реальності</h3><p class="why">Те, чого немає в жодному іншому застосунку.</p><div class="bar"><i style="width:80%"></i></div>
+      <div class="chips"><span class="chip hot">Заряджання = світло</span><span class="chip">Журнал «зникло/з’явилося»</span><span class="chip">Точність джерел</span><span class="chip">«Не та черга?»</span><span class="chip">HomeKit-розетка</span></div></div>
+    <div class="theme"><h3>Спланувати день</h3><p class="why">Не «коли вимкнуть», а «що я встигну».</p><div class="bar"><i style="width:75%"></i></div>
+      <div class="chips"><span class="chip hot">«Мій день»: вільні вікна</span><span class="chip">Планувальник приладів</span><span class="chip">«Де буде світло о 15:00»</span><span class="chip">Календар / ICS</span><span class="chip">48-год шкала</span></div></div>
+    <div class="theme"><h3>Спокій</h3><p class="why">Менше тривоги, більше контролю.</p><div class="bar"><i style="width:70%"></i></div>
+      <div class="chips"><span class="chip hot">Ранковий дайджест</span><span class="chip">Завтра опубліковано</span><span class="chip">Тиха ніч</span><span class="chip">Чекліст підготовки</span><span class="chip">«Світло повернулося»</span></div></div>
+    <div class="theme"><h3>Родина</h3><p class="why">Місця батьків і спільні графіки.</p><div class="bar"><i style="width:60%"></i></div>
+      <div class="chips"><span class="chip hot">Посилання / QR місця</span><span class="chip">Сповіщення «у батьків з’явилося»</span><span class="chip">Картка для Telegram</span><span class="chip">AirDrop офлайн</span></div></div>
+    <div class="theme"><h3>Готовність до App Store</h3><p class="why">Якщо колись захочеш випустити.</p><div class="bar"><i style="width:45%"></i></div>
+      <div class="chips"><span class="chip">Privacy manifest</span><span class="chip">VoiceOver</span><span class="chip">English</span><span class="chip">Альтернативні іконки</span><span class="chip">«Що нового»</span></div></div>
+  </div>
+
+  <h2>Усі ідеї за техніками</h2>
+  <details><summary>Job to Be Done <small>— «спланувати життя навколо світла»</small></summary><ul>
+    <li>«Мій день»: вільні вікна зі світлом і що в них вміщається</li><li>Планувальник приладів: посудомийка 2 год → найкращий час старту</li><li>Чекліст заряджання в попередженні</li><li>Оцінка павербанка / домашньої батареї</li><li>Нагадування про холодильник після 4 год без світла</li><li>«Де зараз світло» — рейтинг місць</li><li>«Де буде світло о 15:00?»</li><li>«Чи встигну приготувати вечерю о 19:00?»</li><li>Поділитися вікнами зі світлом з колегою</li><li>Найдовше вікно зі світлом як заголовок</li></ul></details>
+  <details><summary>Role Playing <small>— ти, батьки, віддалений працівник, власник магазину, мандрівник</small></summary><ul>
+    <li>Місце батьків з окремим сповіщенням про повернення світла</li><li>Посилання/QR, щоб додати місце в один дотик</li><li>Розклад дня картинкою для Telegram/Instagram</li><li>«Робочі вікна» ≥ 2 год у 9–18</li><li>Звіт години роботи магазину проти відключень</li><li>Точка на мапі → область і черга</li><li>Маршрут із кількома зупинками</li><li>Спрощений режим із великим текстом</li><li>Критичні сповіщення для медичних пристроїв</li></ul></details>
+  <details><summary>SCAMPER <small>— над віджетами, Live Activity, статистикою, подорожжю</small></summary><ul>
+    <li>Віджети Lock Screen: кільце-відлік, міні-шкала</li><li>StandBy з великим відліком</li><li>Теплова карта година × день тижня</li><li>Відключення в Календар / ICS</li><li>Control Center control</li><li>Siri / App Intents</li><li>Дії Shortcuts</li><li>48-год шкала</li><li>Live Activity з міні-шкалою</li><li>Заряджання iPhone як сигнал світла</li><li>Mac (Designed for iPad / меню-бар)</li><li>Онбординг одним екраном</li><li>Оновлення у вікно публікації графіка</li><li>«Світло повернулося» з тривалістю</li><li>«Тиха ніч» без попереджень</li></ul></details>
+  <details><summary>Worst Possible Idea → навпаки</summary><ul>
+    <li>Без акаунта й трекінгу + privacy manifest</li><li>Бюджет сповіщень і групування</li><li>Мітка впевненості на день</li><li>Щоденна перевірка парсера в GitHub Actions</li><li>macOS CI на кожен PR</li><li>Позначений прогноз на завтра до публікації</li><li>Черги ГАВ і статус енергосистеми</li></ul></details>
+  <details><summary>Trait Transfer <small>— погода, транспорт, фітнес-кільця</small></summary><ul>
+    <li>Погодинна смужка як опади</li><li>«На 2 год менше, ніж учора»</li><li>Табло «Наступна зміна» для всіх місць</li><li>Денне кільце частки часу зі світлом</li><li>Тижневий підсумок у неділю</li></ul></details>
+  <details><summary>Starbursting <small>— хто / що / де / коли / як</small></summary><ul>
+    <li>Геозона: прибув до місця → його стан</li><li>Підсвітити місце, де я зараз</li><li>Ранковий дайджест</li><li>«Графік на завтра опубліковано»</li><li>Тривога, якщо до 22:00 графіка немає</li><li>Swift Charts у статистиці</li><li>Експорт CSV</li><li>English</li><li>VoiceOver</li><li>Регіони ДТЕК</li><li>Черга за особовим рахунком</li><li>Альтернативні іконки</li></ul></details>
+  <details><summary>Speculative future <small>— NoLight у 2027</small></summary><ul>
+    <li>Сцени HomeKit перед відключенням</li><li>Розетка HomeKit онлайн = світло є</li><li>EcoFlow/Bluetti заряд поруч із графіком</li><li>Оголошення в AirPods на виході з дому</li><li>CarPlay: стан у пункті призначення</li><li>Інтерактивний віджет: перемкнути місце/день</li><li>Smart Stack за 30 хв до зміни</li><li>Автозапуск Live Activity за 30 хв</li><li>Мапа пунктів незламності</li><li>Краудрепорти (потрібен бекенд)</li></ul></details>
+  <details><summary>Constraint <small>— «3 дні без інтернету», «10 секунд уваги»</small></summary><ul>
+    <li>Упевнений офлайн із віком даних</li><li>Обмін графіком через AirDrop</li><li>Одне речення на місце на головному</li><li>Тап по віджету гортає місця</li><li>Action Button озвучує стан</li><li>Режим енергозбереження</li></ul></details>
+  <details><summary>How Might We <small>— довіра й надійність</small></summary><ul>
+    <li>«Підтверджено», коли сайт і API збігаються</li><li>Підсвітка змін на шкалі</li><li>Помічник «Не та черга?»</li><li>Журнал реальних подій</li><li>Точність джерел</li></ul></details>
+  <details><summary>Lotus Blossom <small>— навколо «спокою»</small></summary><ul>
+    <li>Одне сповіщення на день</li><li>Чекліст підготовки</li><li>Поради «що робити без світла»</li><li>Людський відлік («ще 2 серії»)</li><li>Нічний приглушений віджет</li></ul></details>
+  <details><summary>Random Stimulation + Backcasting <small>— «сад», «поїзд», «свічка», реліз у 2027</small></summary><ul>
+    <li>Нагадування про полив / насос</li><li>Мітки «графік змінено +30 хв»</li><li>Анімація «Світло знову»</li><li>Історія відключень як статус-сторінка</li><li>Privacy manifest, скріншоти, сторінка підтримки</li><li>TestFlight через fastlane</li><li>MetricKit</li><li>Snapshot-тести</li><li>«Що нового»</li><li>Кнопка відгуку з діагностикою</li></ul></details>
+</main>
+<footer>Повний журнал сесії: <code>_bmad-output/brainstorming/brainstorm-nolight-next-features-2026-11-12/.memlog.md</code></footer>
+</body>
+</html>
