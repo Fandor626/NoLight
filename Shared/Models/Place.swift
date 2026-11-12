@@ -103,6 +103,8 @@ struct Place: Identifiable, Hashable, Codable, Sendable {
     var source: PlaceSource
     /// За скільки хвилин попереджати перед відключенням; nil — вимкнено (NOL-21). Старі збережені місця → nil.
     var warnBeforeOutageMinutes: Int? = nil
+    /// За скільки хвилин попереджати перед поверненням світла; nil — вимкнено (NOL-22).
+    var warnBeforeReturnMinutes: Int? = nil
 
     /// Варіанти часу попередження.
     static let warningLeadOptions = [5, 10, 15, 30, 60]
