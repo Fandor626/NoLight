@@ -4,11 +4,12 @@ struct RootView: View {
     @Environment(AppState.self) private var state
     @State private var tab = Tab.home
 
-    enum Tab { case home, settings }
+    enum Tab { case home, travel, settings }
 
     var body: some View {
         TabView(selection: $tab) {
             HomeView().tabItem { Label("Графіки", systemImage: "bolt.fill") }.tag(Tab.home)
+            TravelView().tabItem { Label("Подорож", systemImage: "car.fill") }.tag(Tab.travel)
             SettingsView().tabItem { Label("Налаштування", systemImage: "gearshape.fill") }.tag(Tab.settings)
         }
         // Посилання з віджетів: nolight://place/{id} відкриває місце, nolight://home — головний екран.

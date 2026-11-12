@@ -45,8 +45,8 @@ development_status:
   4-3-night-bounds-settings: backlog  # NOL-27
   epic-4-retrospective: optional
 
-  epic-5: backlog  # NOL-5
-  5-1-preview-without-saving: backlog  # NOL-28
+  epic-5: in-progress  # NOL-5
+  5-1-preview-without-saving: review  # NOL-28
   5-2-state-at-arrival-time: backlog  # NOL-29
   epic-5-retrospective: optional
 
