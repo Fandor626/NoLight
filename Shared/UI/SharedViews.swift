@@ -142,9 +142,38 @@ struct TimelineBarView: View {
     }
 }
 
+/// Свіжість даних (NOL-16): «застаріло» після 1 год, «протерміновано» після 24 год.
+enum FreshnessCopy {
+    static let stale = "Застаріло"
+    static let expired = "Протерміновано"
+    static let unofficial = "Неофіційне джерело"
+}
+
 struct StaleWarningLabel: View {
     var body: some View {
-        Label("Дані можуть бути застарілими", systemImage: "exclamationmark.triangle.fill")
+        Label(FreshnessCopy.stale, systemImage: "exclamationmark.triangle.fill")
             .foregroundStyle(.orange)
+            .accessibilityLabel("Дані застаріли: останнє оновлення понад годину тому")
+    }
+}
+
+struct ExpiredWarningLabel: View {
+    var body: some View {
+        Label(FreshnessCopy.expired, systemImage: "clock.badge.exclamationmark.fill")
+            .foregroundStyle(.red)
+            .accessibilityLabel("Дані протерміновані: останнє оновлення понад добу тому")
+    }
+}
+
+/// Позначка «неофіційне джерело» для графіків з API (NOL-16).
+struct UnofficialSourceBadge: View {
+    var compact = false
+    var body: some View {
+        Text(compact ? "неофіц." : FreshnessCopy.unofficial.lowercased())
+            .font(.system(size: compact ? 9 : 11, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Color.secondary.opacity(0.15), in: Capsule())
+            .accessibilityLabel(FreshnessCopy.unofficial)
     }
 }

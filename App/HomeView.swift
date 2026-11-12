@@ -24,6 +24,7 @@ struct HomeView: View {
                                     NavigationLink(value: place) {
                                         PlaceCardView(
                                             name: place.name,
+                                            isUnofficial: place.sourceKey.source == .outageDataAPI,
                                             presentation: SubgroupPresentation(snapshot: state.snapshot(for: place),
                                                                                subgroup: place.subgroup, now: context.date))
                                     }
@@ -105,10 +106,11 @@ struct EmptyStateView: View {
 /// Картка місця в застосунку — та сама `PlaceCardContent`, що й у віджетах (NOL-40).
 struct PlaceCardView: View {
     let name: String
+    var isUnofficial = false
     let presentation: SubgroupPresentation
 
     var body: some View {
-        PlaceCardContent(name: name, presentation: presentation, style: .app) {
+        PlaceCardContent(name: name, presentation: presentation, style: .app, isUnofficial: isUnofficial) {
             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .padding(16)
@@ -132,11 +134,11 @@ struct DataStatusBanners: View {
             switch reliability {
             case .stale:
                 Banner(icon: "exclamationmark.triangle.fill", tint: .orange,
-                       text: "Дані можуть бути застарілими. Останнє успішне оновлення: "
+                       text: "Застаріло: дані можуть бути неактуальними. Останнє успішне оновлення: "
                              + KyivTime.shortDateTimeString(state.snapshot?.fetchedAt ?? now) + ".")
             case .expired:
                 Banner(icon: "clock.badge.exclamationmark.fill", tint: .red,
-                       text: "Збережені дані надто старі й не показуються як актуальні. Оновіть, коли з’явиться інтернет.")
+                       text: "Протерміновано: збереженим даним понад добу, тому вони не показуються як актуальні. Оновіть, коли з’явиться інтернет.")
             case .none:
                 if state.lastError == nil && !state.isRefreshing {
                     Banner(icon: "arrow.down.circle", tint: .blue, text: "Дані ще не завантажено.")

@@ -95,6 +95,8 @@ struct SubgroupPresentation: Sendable {
 
     var minuteNow: Int { KyivTime.minutes(of: now) }
     var showsStaleWarning: Bool { reliability == .stale }
+    /// Дані старші за 24 год: графік не показується як актуальний (NOL-16).
+    var showsExpiredWarning: Bool { reliability == .expired }
 
     var headline: String {
         switch status.state {
@@ -128,7 +130,7 @@ struct SubgroupPresentation: Sendable {
     var updatedText: String? {
         guard let lastCheck else { return nil }
         let sameDay = KyivTime.dateKey(for: lastCheck) == todayKey
-        return "Оновлено " + (sameDay ? KyivTime.timeString(lastCheck) : KyivTime.shortDateTimeString(lastCheck))
+        return "Оновлено " + (sameDay ? "о " + KyivTime.timeString(lastCheck) : KyivTime.shortDateTimeString(lastCheck))
     }
 
     private func timeLabel(_ date: Date) -> String {

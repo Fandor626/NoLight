@@ -51,6 +51,7 @@ struct PlaceDetailView: View {
                         HStack {
                             SubgroupBadge(text: subgroup.id)
                             Text("\(place.region.title) обл.").font(.subheadline).foregroundStyle(.secondary)
+                            if place.sourceKey.source == .outageDataAPI { UnofficialSourceBadge() }
                             Spacer()
                             Text(KyivTime.longDateString(context.date).capitalized)
                                 .font(.subheadline).foregroundStyle(.secondary)
