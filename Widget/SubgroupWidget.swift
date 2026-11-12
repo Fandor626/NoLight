@@ -48,9 +48,10 @@ struct SubgroupProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: SelectSubgroupIntent, in context: TimelineProviderContext) async -> Timeline<SubgroupEntry> {
-        // Віджет сам пробує оновити дані; при невдачі використовується кеш.
+        // Віджет сам пробує оновити дані лише в автоматичному режимі (NOL-42); інакше — кеш.
         let resolution = configuration.resolution
-        let snapshot = await ScheduleRepository.live(for: resolution.sourceKey).refreshIfNeeded(maxAge: 15 * 60)
+        let snapshot = await ScheduleRepository.live(for: resolution.sourceKey)
+            .widgetSnapshot(allowsSelfRefresh: RefreshSettingsStore.shared.allowsWidgetSelfRefresh)
         let now = Date()
         let failure = RefreshStatusStore.shared(for: resolution.sourceKey).lastFailure
         guard let sg = resolution.subgroup else {

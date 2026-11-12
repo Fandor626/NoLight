@@ -38,6 +38,7 @@ development_status:
   3-5-schedule-change-notification: ready-for-testing  # NOL-23
   3-6-schedule-change-history: ready-for-testing  # NOL-24
   epic-3-retrospective: optional
+  3-7-manual-mode-stops-widget-refresh: review  # NOL-42
 
   epic-4: in-progress  # NOL-4
   4-1-period-statistics: review  # NOL-25
