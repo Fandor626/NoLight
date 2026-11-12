@@ -9,6 +9,7 @@ struct PlaceDetailView: View {
     @State private var pastKey: String?
     @State private var showingSettings = false
     @State private var showingComparison = false
+    @State private var showingStatistics = false
 
     enum DayMode: Hashable { case earlier, today, tomorrow }
 
@@ -31,6 +32,7 @@ struct PlaceDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button { showingSettings = true } label: { Label("Налаштування місця", systemImage: "slider.horizontal.3") }
+                        Button { showingStatistics = true } label: { Label("Статистика", systemImage: "chart.bar") }
                         if place?.region == .cherkasy {
                             Button { showingComparison = true } label: {
                                 Label("Порівняння джерел", systemImage: "rectangle.split.2x1")
@@ -43,6 +45,7 @@ struct PlaceDetailView: View {
         }
         .sheet(isPresented: $showingSettings) { PlaceSettingsView(placeID: placeID) }
         .sheet(isPresented: $showingComparison) { SourceComparisonView(placeID: placeID) }
+        .sheet(isPresented: $showingStatistics) { StatisticsView(placeID: placeID) }
     }
 
     private func content(place: Place) -> some View {
@@ -129,6 +132,21 @@ struct PlaceDetailView: View {
 
                     IntervalListView(day: day, messageOverride: isPast && day.kind != .published
                                      ? HistoryWindow.unknownMessage : nil).card()
+
+                    Button { showingStatistics = true } label: {
+                        HStack {
+                            Label("Статистика", systemImage: "chart.bar").font(.headline)
+                            Spacer()
+                            if let m = StatisticsCalculator.minutes(of: p.today) {
+                                Text("Сьогодні без світла " + StatisticsFormat.duration(m.outage))
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .card()
 
                     let changes = ScheduleChangeHistory.entries(for: place.id, in: state.changeHistory)
                     if !changes.isEmpty {

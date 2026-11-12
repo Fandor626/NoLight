@@ -33,14 +33,14 @@ development_status:
   epic-3: in-progress  # NOL-3
   3-1-refresh-mode: ready-for-testing  # NOL-19
   3-2-background-refresh: ready-for-testing  # NOL-20
-  3-3-warning-before-outage: review  # NOL-21
-  3-4-warning-before-power-returns: review  # NOL-22
-  3-5-schedule-change-notification: review  # NOL-23
-  3-6-schedule-change-history: review  # NOL-24
+  3-3-warning-before-outage: ready-for-testing  # NOL-21
+  3-4-warning-before-power-returns: ready-for-testing  # NOL-22
+  3-5-schedule-change-notification: ready-for-testing  # NOL-23
+  3-6-schedule-change-history: ready-for-testing  # NOL-24
   epic-3-retrospective: optional
 
-  epic-4: backlog  # NOL-4
-  4-1-period-statistics: backlog  # NOL-25
+  epic-4: in-progress  # NOL-4
+  4-1-period-statistics: review  # NOL-25
   4-2-night-day-split: backlog  # NOL-26
   4-3-night-bounds-settings: backlog  # NOL-27
   epic-4-retrospective: optional
