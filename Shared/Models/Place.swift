@@ -101,6 +101,12 @@ struct Place: Identifiable, Hashable, Codable, Sendable {
     var region: Region
     var subgroup: Subgroup
     var source: PlaceSource
+    /// За скільки хвилин попереджати перед відключенням; nil — вимкнено (NOL-21). Старі збережені місця → nil.
+    var warnBeforeOutageMinutes: Int? = nil
+
+    /// Варіанти часу попередження.
+    static let warningLeadOptions = [5, 10, 15, 30, 60]
+    static let defaultWarningLead = 15
 
     init(id: UUID = UUID(), name: String, region: Region = .cherkasy,
          subgroup: Subgroup, source: PlaceSource = .oblenergoSite) {

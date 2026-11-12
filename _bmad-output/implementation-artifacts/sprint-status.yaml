@@ -33,7 +33,7 @@ development_status:
   epic-3: in-progress  # NOL-3
   3-1-refresh-mode: ready-for-testing  # NOL-19
   3-2-background-refresh: ready-for-testing  # NOL-20
-  3-3-warning-before-outage: backlog  # NOL-21
+  3-3-warning-before-outage: review  # NOL-21
   3-4-warning-before-power-returns: backlog  # NOL-22
   3-5-schedule-change-notification: backlog  # NOL-23
   3-6-schedule-change-history: backlog  # NOL-24

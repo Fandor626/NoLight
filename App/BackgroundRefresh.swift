@@ -19,7 +19,6 @@ enum BackgroundRefresh {
 
     /// Фонове завдання iOS (NOL-20). Одне оновлення джерела оновлює графіки всіх місць (дані спільні для всіх підчерг);
     /// після успіху віджети перезавантажуються (`onUpdate`). Помилка не змінює кеш — її записує `ScheduleRepository`.
-    /// Після NOL-21 тут переплануватимуться сповіщення.
     static func perform(settings: RefreshSettingsStore = .shared) async {
         defer { schedule(settings: settings) }
         // Запит міг лишитися з автоматичного режиму: у ручному нічого не оновлюємо.
@@ -33,5 +32,7 @@ enum BackgroundRefresh {
                 }
             }
         }
+        // Після оновлення — переплануємо попередження за новими графіками (NOL-21).
+        await NotificationScheduler.replanFromStores()
     }
 }
