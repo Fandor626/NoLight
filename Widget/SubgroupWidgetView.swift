@@ -23,10 +23,14 @@ struct SubgroupWidgetView: View {
     var body: some View {
         let p = entry.presentation
         Group {
-            switch family {
-            case .systemSmall: SmallWidgetView(p: p)
-            case .systemMedium: MediumWidgetView(p: p)
-            default: LargeWidgetView(p: p)
+            if entry.isPlaceDeleted {
+                DeletedPlaceView()
+            } else {
+                switch family {
+                case .systemSmall: SmallWidgetView(p: p, title: entry.title)
+                case .systemMedium: MediumWidgetView(p: p, title: entry.title)
+                default: LargeWidgetView(p: p, title: entry.title)
+                }
             }
         }
         .redacted(reason: entry.isPlaceholder ? .placeholder : [])
@@ -34,8 +38,31 @@ struct SubgroupWidgetView: View {
     }
 }
 
+/// Вибране місце видалено в застосунку.
+private struct DeletedPlaceView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: "mappin.slash").font(.title3).foregroundStyle(.secondary)
+            Text("Місце видалено, оберіть інше")
+                .font(.system(.subheadline, design: .rounded, weight: .semibold))
+            Text("Утримуйте віджет → «Змінити віджет».").font(.caption2).foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Назва місця над станом.
+private struct PlaceTitle: View {
+    let title: String
+    var body: some View {
+        Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+    }
+}
+
 private struct SmallWidgetView: View {
     let p: SubgroupPresentation
+    let title: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -47,6 +74,7 @@ private struct SmallWidgetView: View {
                 }
                 RefreshButton()
             }
+            PlaceTitle(title: title)
             Text(p.headline)
                 .font(.system(.headline, design: .rounded))
                 .foregroundStyle(p.status.state.textColor)
@@ -63,12 +91,14 @@ private struct SmallWidgetView: View {
 
 private struct MediumWidgetView: View {
     let p: SubgroupPresentation
+    let title: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 10) {
                 SubgroupBadge(text: p.subgroup.id)
                 VStack(alignment: .leading, spacing: 1) {
+                    PlaceTitle(title: title)
                     Text(p.headline)
                         .font(.system(.headline, design: .rounded))
                         .foregroundStyle(p.status.state.textColor)
@@ -101,12 +131,14 @@ private struct MediumWidgetView: View {
 
 private struct LargeWidgetView: View {
     let p: SubgroupPresentation
+    let title: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 SubgroupBadge(text: p.subgroup.id)
                 VStack(alignment: .leading, spacing: 1) {
+                    PlaceTitle(title: title)
                     Text(p.headline).font(.system(.title3, design: .rounded, weight: .bold))
                         .foregroundStyle(p.status.state.textColor).lineLimit(1).minimumScaleFactor(0.8)
                     if let detail = p.detail { Text(detail).font(.footnote).foregroundStyle(.secondary).lineLimit(1) }

@@ -50,8 +50,8 @@ development_status:
   5-2-state-at-arrival-time: backlog  # NOL-29
   epic-5-retrospective: optional
 
-  epic-6: backlog  # NOL-6
-  6-1-place-in-widget: backlog  # NOL-30
+  epic-6: in-progress  # NOL-6
+  6-1-place-in-widget: review  # NOL-30
   6-2-widget-states: backlog  # NOL-31
   6-3-widgets-mirror-place-cards: backlog  # NOL-40
   epic-6-retrospective: optional
