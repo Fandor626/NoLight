@@ -135,7 +135,9 @@ final class ScheduleLogicTests: XCTestCase {
 
     func testReliabilityThresholds() {
         let now = Fixtures.kyiv(2026, 11, 10, 12, 0)
-        XCTAssertEqual(StatusCalculator.reliability(fetchedAt: now.addingTimeInterval(-3 * 3600), now: now), .fresh)
+        // NOL-31 / PRD FR-9: «застаріло» після 1 години.
+        XCTAssertEqual(StatusCalculator.reliability(fetchedAt: now.addingTimeInterval(-59 * 60), now: now), .fresh)
+        XCTAssertEqual(StatusCalculator.reliability(fetchedAt: now.addingTimeInterval(-3600), now: now), .stale)
         XCTAssertEqual(StatusCalculator.reliability(fetchedAt: now.addingTimeInterval(-5 * 3600), now: now), .stale)
         XCTAssertEqual(StatusCalculator.reliability(fetchedAt: now.addingTimeInterval(-25 * 3600), now: now), .expired)
         XCTAssertEqual(StatusCalculator.reliability(fetchedAt: nil, now: now), .none)

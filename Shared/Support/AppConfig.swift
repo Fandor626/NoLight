@@ -7,7 +7,7 @@ enum AppConfig {
     static let siteURL = URL(string: "https://www.cherkasyoblenergo.com/vidkliuchennia?lang=uk")!
 
     /// Після цього часу без успішного оновлення дані можуть бути неактуальними.
-    static let staleAfter: TimeInterval = 4 * 3600
+    static let staleAfter: TimeInterval = 3600
     /// Після цього часу збережені дані більше не показуються як актуальні.
     static let expiredAfter: TimeInterval = 24 * 3600
 
