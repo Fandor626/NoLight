@@ -128,6 +128,20 @@ final class AppState {
         return true
     }
 
+    /// Змінює джерело місця (NOL-17) і одразу завантажує графік з нового джерела.
+    func setSource(_ source: PlaceSource, for place: Place) {
+        guard place.availableSources.contains(source),
+              let index = places.firstIndex(where: { $0.id == place.id }),
+              places[index].source != source else { return }
+        places[index].source = source
+        save()
+        let key = places[index].sourceKey
+        Task {
+            if snapshots[key] == nil { snapshots[key] = await repository(for: key).cachedSnapshot() }
+            await refresh(keys: [key])
+        }
+    }
+
     func movePlaces(from source: IndexSet, to destination: Int) {
         places.move(fromOffsets: source, toOffset: destination)
         save()

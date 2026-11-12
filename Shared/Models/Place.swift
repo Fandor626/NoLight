@@ -62,6 +62,14 @@ enum PlaceSource: String, Codable, Hashable, Sendable {
 }
 
 extension PlaceSource {
+    /// Коротка назва для вибору джерела (NOL-17).
+    var shortTitle: String {
+        switch self {
+        case .oblenergoSite: return "Сайт обленерго"
+        case .outageDataAPI: return "API"
+        }
+    }
+
     /// Підпис джерела під графіком.
     var title: String {
         switch self {
@@ -101,6 +109,11 @@ struct Place: Identifiable, Hashable, Codable, Sendable {
         self.region = region
         self.subgroup = subgroup
         self.source = source
+    }
+
+    /// Джерела, з яких можна вибрати (NOL-17): Черкаська — сайт або API; інші області — лише API.
+    var availableSources: [PlaceSource] {
+        region == .cherkasy ? [.oblenergoSite, .outageDataAPI] : [.outageDataAPI]
     }
 
     /// Звідки брати графік цього місця. Сайт обленерго є лише для Черкаської.

@@ -26,7 +26,7 @@ development_status:
   epic-2: in-progress  # NOL-2
   2-1-any-region-from-api: review  # NOL-15
   2-2-trust-and-freshness-labels: review  # NOL-16
-  2-3-source-choice-for-cherkasy: backlog  # NOL-17
+  2-3-source-choice-for-cherkasy: review  # NOL-17
   2-4-source-comparison-screen: backlog  # NOL-18
   epic-2-retrospective: optional
 
