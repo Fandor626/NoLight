@@ -10,6 +10,8 @@ struct PlaceSettingsView: View {
     /// «Завжди на екрані» (NOL-43).
     @State private var keepsCountdown = false
     @State private var countdownError: String?
+    /// Місце, яке показує Apple Watch (NOL-46).
+    @State private var watchPlaceID = WatchPlaceStore.shared.placeID
 
     var body: some View {
         NavigationStack {
@@ -76,6 +78,20 @@ struct PlaceSettingsView: View {
                         Text("Заблокований екран")
                     } footer: {
                         Text("Відлік до наступної зміни прибирається лише тут або в меню «…». Якщо його випадково змахнути або iOS завершить його через 8 год, NoLight поверне його, щойно ви відкриєте застосунок.")
+                    }
+                    Section {
+                        Toggle("Показувати на годиннику", isOn: Binding(
+                            get: { watchPlaceID == place.id },
+                            set: { on in
+                                let id: UUID? = on ? place.id : nil
+                                WatchPlaceStore.shared.placeID = id
+                                watchPlaceID = id
+                                WatchSync.shared.send()
+                            }))
+                    } header: {
+                        Text("Apple Watch")
+                    } footer: {
+                        Text("Застосунок NoLight на годиннику й віджет показують одне місце. Вибрати його можна тут або на самому годиннику.")
                     }
                 } else {
                     ContentUnavailableView("Місце видалено", systemImage: "mappin.slash")

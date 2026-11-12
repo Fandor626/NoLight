@@ -10,7 +10,10 @@ struct NoLightApp: App {
         WindowGroup {
             RootView()
                 .environment(state)
-                .task { await state.start() }
+                .task {
+                    WatchSync.shared.activate()
+                    await state.start()
+                }
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {

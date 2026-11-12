@@ -77,7 +77,7 @@ development_status:
   9-2-keep-countdown-on-lock-screen: review  # NOL-43
   epic-9-retrospective: optional
 
-  epic-10: backlog  # NOL-45 (Apple Watch)
-  10-1-watch-app-chosen-place: backlog  # NOL-46
+  epic-10: in-progress  # NOL-45 (Apple Watch)
+  10-1-watch-app-chosen-place: review  # NOL-46
   10-2-watch-widget-timeline: backlog  # NOL-47
   epic-10-retrospective: optional

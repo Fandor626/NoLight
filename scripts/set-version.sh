@@ -6,7 +6,7 @@
 # документація, _bmad, README та інше версію не змінюють.
 # Старші два числа (major.minor) змінюються вручну у файлі VERSION.
 #
-# Застосунок і віджет обчислюють однакові значення з того самого коміту,
+# Застосунок, віджет і застосунок годинника обчислюють однакові значення з того самого коміту,
 # тому їхні CFBundleVersion завжди збігаються (цього вимагає iOS).
 set -euo pipefail
 
@@ -21,7 +21,7 @@ if ! [[ "$BASE" =~ ^[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Шляхи, зміни в яких вважаються зміною застосунку (можна перевизначити змінною CODE_PATHS).
-CODE_PATHS="${CODE_PATHS:-App Shared Widget project.yml VERSION scripts/set-version.sh}"
+CODE_PATHS="${CODE_PATHS:-App Shared Widget Watch WatchShared WatchWidget project.yml VERSION scripts/set-version.sh}"
 
 # Без git (наприклад, архів без історії) лишаємо значення з налаштувань проєкту.
 if COUNT="$(git rev-list --count HEAD -- $CODE_PATHS 2>/dev/null)" && [ "$COUNT" -ge 1 ]; then

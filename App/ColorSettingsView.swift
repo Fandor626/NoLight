@@ -63,6 +63,7 @@ struct ColorSettingsView: View {
             Button("Скинути", role: .destructive) {
                 colors.reset()
                 WidgetCenter.shared.reloadAllTimelines()
+                WatchSync.shared.send()
             }
             Button("Скасувати", role: .cancel) {}
         }
@@ -84,6 +85,7 @@ struct ColorSettingsView: View {
     private func apply(_ theme: ColorTheme) {
         colors.theme = theme
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.send()
     }
 }
 
