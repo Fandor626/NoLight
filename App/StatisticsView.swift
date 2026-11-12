@@ -8,8 +8,8 @@ struct StatisticsView: View {
     @State private var period = StatisticsPeriod.seven
 
     private var place: Place? { state.places.first { $0.id == placeID } }
-    /// Межі ночі (NOL-26). Налаштування — NOL-27.
-    private var night: NightBounds { .default }
+    /// Межі ночі з налаштувань (NOL-27).
+    private var night: NightBounds { NightBoundsStore.shared.bounds }
 
     var body: some View {
         NavigationStack {

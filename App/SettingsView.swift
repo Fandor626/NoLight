@@ -14,6 +14,13 @@ struct SettingsView: View {
     @Environment(AppState.self) private var state
     @State private var refreshMode = RefreshSettingsStore.shared.mode
     @State private var refreshInterval = RefreshSettingsStore.shared.interval
+    @State private var nightStart = NightTime.date(minute: NightBoundsStore.shared.bounds.startMinute)
+    @State private var nightEnd = NightTime.date(minute: NightBoundsStore.shared.bounds.endMinute)
+    @State private var nightError: String?
+
+    private var draftNight: NightBounds {
+        NightBounds(startMinute: NightTime.minute(of: nightStart), endMinute: NightTime.minute(of: nightEnd))
+    }
 
     var body: some View {
         NavigationStack {
@@ -62,6 +69,25 @@ struct SettingsView: View {
                          : "Фонове оновлення вимкнено. Графік оновлюється при відкритті застосунку, кнопкою «Оновити» та самими віджетами.")
                 }
 
+                Section {
+                    DatePicker("Початок ночі", selection: $nightStart, displayedComponents: .hourAndMinute)
+                    DatePicker("Кінець ночі", selection: $nightEnd, displayedComponents: .hourAndMinute)
+                    if let nightError {
+                        Label(nightError, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                    }
+                    if draftNight != .default {
+                        Button("Скинути до 00:00–06:00") {
+                            nightStart = NightTime.date(minute: NightBounds.default.startMinute)
+                            nightEnd = NightTime.date(minute: NightBounds.default.endMinute)
+                        }
+                    }
+                } header: {
+                    Text("Статистика")
+                } footer: {
+                    Text("Ніч може переходити через північ, наприклад 22:00–06:00. Статистика перераховується одразу.")
+                }
+                .environment(\.timeZone, KyivTime.timeZone)
+
                 Section("Джерело даних") {
                     Text("Графіки погодинних відключень (ГПВ), які АТ «Черкасиобленерго» публікує в новинах на офіційному сайті.")
                         .font(.footnote)
@@ -75,6 +101,10 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Налаштування")
+            .onChange(of: draftNight) { _, bounds in
+                nightError = bounds.validationMessage
+                NightBoundsStore.shared.save(bounds)
+            }
             .onChange(of: refreshMode) { _, mode in
                 RefreshSettingsStore.shared.mode = mode
                 BackgroundRefresh.schedule()
