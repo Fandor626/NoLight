@@ -75,3 +75,37 @@ enum PlaceActivityPlanner {
         }
     }
 }
+
+/// Що зробити з відліками, коли застосунок відкрито (NOL-43). iOS не дає заборонити свайп,
+/// тож «не зникає» = застосунок сам повертає відлік, доки його не зупинили в застосунку.
+struct LiveActivityRestorePlan: Equatable, Sendable {
+    /// Запустити заново (змахнули або iOS завершила).
+    var start: [UUID] = []
+    /// Перезапустити, бо скоро ліміт 8 год.
+    var renew: [UUID] = []
+    /// Прибрати з «завжди на екрані» (місце видалено).
+    var forget: [UUID] = []
+}
+
+enum LiveActivityRestorePlanner {
+    /// Перезапускаємо заздалегідь, щоб не дійти до ліміту між запусками застосунку.
+    static let renewAfter: TimeInterval = 7.5 * 3600
+
+    /// - Parameters:
+    ///   - kept: місця з «завжди на екрані».
+    ///   - running: активні відліки: місце → коли запущено.
+    ///   - placeIDs: усі збережені місця (у порядку показу).
+    static func plan(kept: Set<UUID>, running: [UUID: Date], placeIDs: [UUID], now: Date) -> LiveActivityRestorePlan {
+        var plan = LiveActivityRestorePlan()
+        let existing = Set(placeIDs)
+        plan.forget = kept.subtracting(existing).sorted { $0.uuidString < $1.uuidString }
+        for id in placeIDs where kept.contains(id) {
+            if let startedAt = running[id] {
+                if now.timeIntervalSince(startedAt) >= renewAfter { plan.renew.append(id) }
+            } else {
+                plan.start.append(id)
+            }
+        }
+        return plan
+    }
+}

@@ -61,6 +61,12 @@ final class AppState {
         await refresh()
     }
 
+    /// Повертає відліки «завжди на екрані» (NOL-43); лише коли застосунок активний.
+    func restoreLiveActivities() async {
+        let snaps = snapshots
+        await LiveActivityManager.restore(places: places, snapshot: { snaps[$0.sourceKey] })
+    }
+
     /// Оновлює всі джерела, що використовують місця (паралельно). Помилка одного джерела не зачіпає інші.
     func refresh() async {
         await refresh(keys: activeKeys)

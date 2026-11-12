@@ -14,7 +14,11 @@ struct NoLightApp: App {
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
-            case .active: Task { await state.refresh() }
+            case .active:
+                Task {
+                    await state.refresh()
+                    await state.restoreLiveActivities()
+                }
             case .background: BackgroundRefresh.schedule()
             default: break
             }
