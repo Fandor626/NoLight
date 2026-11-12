@@ -12,6 +12,8 @@ enum ScheduleChangeNotifier {
         var seen = store.seen
         let changes = ScheduleChangeDetector.detect(places: places, snapshot: snapshot, seen: &seen, now: now)
         store.seen = seen
+        // Історія змін (NOL-24): записуємо всі зміни (і чистимо старі) незалежно від того, чи ввімкнено сповіщення.
+        ScheduleChangeHistoryStore.shared.record(changes, places: places, now: now)
         guard !changes.isEmpty else { return [] }
 
         let center = UNUserNotificationCenter.current()

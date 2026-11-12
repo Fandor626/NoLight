@@ -130,6 +130,11 @@ struct PlaceDetailView: View {
                     IntervalListView(day: day, messageOverride: isPast && day.kind != .published
                                      ? HistoryWindow.unknownMessage : nil).card()
 
+                    let changes = ScheduleChangeHistory.entries(for: place.id, in: state.changeHistory)
+                    if !changes.isEmpty {
+                        ChangeHistoryView(changes: changes).card()
+                    }
+
                     VStack(alignment: .leading, spacing: 4) {
                         if let updated = p.updatedText { Text(updated) }
                         if let published = day.publishedAt {
@@ -180,6 +185,31 @@ private struct PastDayStrip: View {
                 }
             }
         }
+    }
+}
+
+/// «Зміни графіка» (NOL-24): коли змінився графік і як саме.
+private struct ChangeHistoryView: View {
+    let changes: [ScheduleChange]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Зміни графіка").font(.headline)
+            ForEach(Array(changes.enumerated()), id: \.offset) { _, change in
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("\(KyivTime.shortDateTimeString(change.detectedAt)) · графік на \(dayTitle(change.dateKey))")
+                        .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    Text("Було: " + ScheduleChangeDetector.describe(change.old))
+                        .font(.subheadline).foregroundStyle(.secondary).strikethrough()
+                    Text("Стало: " + ScheduleChangeDetector.describe(change.new))
+                        .font(.subheadline)
+                }
+            }
+        }
+    }
+
+    private func dayTitle(_ key: String) -> String {
+        KyivTime.startOfDay(dateKey: key).map { KyivTime.longDateString($0) } ?? key
     }
 }
 
