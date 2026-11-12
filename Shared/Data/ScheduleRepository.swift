@@ -44,6 +44,11 @@ actor ScheduleRepository {
     }
 
     /// Для віджетів: оновлює дані, лише якщо кеш старіший за `maxAge`; при невдачі повертає кеш.
+    /// Дані для таймлайна віджета (NOL-42): у ручному режимі лише кеш, без мережі.
+    func widgetSnapshot(allowsSelfRefresh: Bool, maxAge: TimeInterval = 15 * 60) async -> ScheduleSnapshot? {
+        allowsSelfRefresh ? await refreshIfNeeded(maxAge: maxAge) : cache.load()
+    }
+
     func refreshIfNeeded(maxAge: TimeInterval) async -> ScheduleSnapshot? {
         let cached = cache.load()
         if let cached, now().timeIntervalSince(cached.fetchedAt) < maxAge { return cached }

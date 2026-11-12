@@ -4,6 +4,9 @@ import Foundation
 enum RefreshMode: String, CaseIterable, Sendable {
     case automatic, manual
 
+    /// Віджети оновлюють дані самі лише в автоматичному режимі (NOL-42).
+    var allowsWidgetSelfRefresh: Bool { self == .automatic }
+
     var title: String {
         switch self {
         case .automatic: return "Автоматично"
@@ -55,6 +58,10 @@ final class RefreshSettingsStore: @unchecked Sendable {
 
     /// Чи можна оновлювати дані у фоновому завданні (NOL-20): лише в автоматичному режимі.
     var allowsBackgroundRefresh: Bool { mode == .automatic }
+
+    /// Чи можуть віджети самі ходити в мережу (NOL-42): лише в автоматичному режимі.
+    /// Кнопка «Оновити» у віджеті — дія користувача, працює в будь-якому режимі.
+    var allowsWidgetSelfRefresh: Bool { mode.allowsWidgetSelfRefresh }
 
     /// Коли найраніше запускати наступне фонове оновлення; nil — у ручному режимі (не реєструвати).
     func nextBackgroundRefresh(after now: Date) -> Date? {

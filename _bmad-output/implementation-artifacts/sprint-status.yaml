@@ -38,6 +38,7 @@ development_status:
   3-5-schedule-change-notification: review  # NOL-23
   3-6-schedule-change-history: review  # NOL-24
   epic-3-retrospective: optional
+  3-7-manual-mode-stops-widget-refresh: review  # NOL-42
 
   epic-4: backlog  # NOL-4
   4-1-period-statistics: backlog  # NOL-25

@@ -33,7 +33,7 @@ Estimates are set by Bohdan in Jira and are not stored here.
 | NOL Sprint 2 | History and refresh settings | NOL-14 (1.5), NOL-19 (3.1), NOL-20 (3.2) |
 | NOL Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
 | NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
-| NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2) |
+| NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2), NOL-42 (3.7) |
 | NOL Sprint 6 | Look and brand | NOL-32 (7.1), NOL-33 (7.2), NOL-34 (7.3), NOL-35 (8.1), NOL-36 (8.2) |
 | NOL Sprint 7 | Optional: Live Activity | NOL-39 (9.1) |
 
@@ -499,6 +499,36 @@ As Bohdan, I want to see how a schedule changed, so that I can compare the old a
 
 #### Prototype
 TBD — Claude artifact prototype
+
+---
+
+### NOL-42: 3.7 Manual mode also stops widget self-refresh
+**Type:** Story · **Epic:** NOL-3 · **Sprint:** Sprint 5 · **Status:** To Do
+
+#### Description
+As Bohdan, I want «Лише вручну» (Manual only) to also stop widgets from fetching schedules on their own, so that no network requests happen unless I ask for them.
+
+#### Expected behavior
+- In «Лише вручну» mode widgets never go to the network by themselves: they show the cached schedule and still move between states at the planned change times.
+- The widget refresh button and «Оновити» in the app still fetch data (explicit user action).
+- In «Автоматично» (Automatic) mode widgets behave as before (refresh when the cache is older than 15 minutes).
+- The Settings footer for manual mode says widgets refresh only via their button.
+
+#### Acceptance criteria
+- **AC1.** Given manual mode, When WidgetKit reloads a widget timeline, Then no network request is made and the cached schedule is shown.
+- **AC2.** Given manual mode, When I tap the refresh button on a widget, Then the schedule is fetched.
+- **AC3.** Given automatic mode, When the cache is older than 15 minutes, Then the widget refreshes as before.
+- **AC4.** Given manual mode and stale or expired cache, Then the widget shows the «Застаріло» / «Протерміновано» labels as usual.
+
+#### Technical notes
+- `Shared/Data/RefreshSettings.swift`: `RefreshSettingsStore.allowsWidgetSelfRefresh` (automatic only) and a pure helper to decide cache vs refresh.
+- `Widget/SubgroupWidget.swift`, `Widget/PlacesListWidget.swift`: use `cachedSnapshot()` when self-refresh is not allowed. `RefreshIntent` unchanged.
+- `App/SettingsView.swift`: manual-mode footer text.
+- Decision from Bohdan (Sprint 5 review): manual mode must stop widget self-refresh.
+- Depends on: NOL-19.
+
+#### Prototype
+N/A — no UI
 
 ---
 

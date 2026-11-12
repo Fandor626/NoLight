@@ -59,13 +59,14 @@ struct PlacesListProvider: TimelineProvider {
         }
     }
 
-    /// Кеш (або оновлення, якщо кеш старіший за 15 хв) для кожного джерела, яке використовують місця.
+    /// Кеш (або оновлення, якщо кеш старіший за 15 хв і режим автоматичний — NOL-42) для кожного джерела місць.
     private func load(refresh: Bool) async -> [ScheduleSourceKey: ScheduleSnapshot] {
         var out: [ScheduleSourceKey: ScheduleSnapshot] = [:]
+        let selfRefresh = RefreshSettingsStore.shared.allowsWidgetSelfRefresh
         for key in ScheduleSourceKey.active(for: PlaceStore.shared.places) {
             let repo = ScheduleRepository.live(for: key)
             if refresh {
-                out[key] = await repo.refreshIfNeeded(maxAge: 15 * 60)
+                out[key] = await repo.widgetSnapshot(allowsSelfRefresh: selfRefresh)
             } else {
                 out[key] = await repo.cachedSnapshot()
             }
