@@ -29,7 +29,7 @@ Estimates are set by Bohdan in Jira and are not stored here.
 
 | Sprint | Goal | Stories |
 |---|---|---|
-| NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice; widgets show places | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4), NOL-30 (6.1), NOL-31 (6.2), NOL-40 (6.3) |
+| NOL Sprint 1 | Close v1 leftovers; places replace the global subgroup choice; widgets show places | NOL-38 (8.4), NOL-37 (8.3), NOL-10 (1.1), NOL-11 (1.2), NOL-12 (1.3), NOL-13 (1.4), NOL-30 (6.1), NOL-31 (6.2), NOL-40 (6.3), NOL-41 (bug) |
 | NOL Sprint 2 | History and refresh settings | NOL-14 (1.5), NOL-19 (3.1), NOL-20 (3.2) |
 | NOL Sprint 3 | All regions, API source and trust | NOL-15 (2.1), NOL-16 (2.2), NOL-17 (2.3), NOL-18 (2.4) |
 | NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
@@ -859,7 +859,7 @@ The app has its own name (NoLight), logo, icon and launch screen, and its versio
 - Build number grows only with app-code commits and is shown in settings.
 
 #### Acceptance criteria
-- **AC1.** All stories NOL-35…NOL-38 are done.
+- **AC1.** All stories NOL-35…NOL-38 and bug NOL-41 are done.
 
 #### Technical notes
 - Versioning: `scripts/set-version.sh` (post-build script for app and widget).
@@ -947,6 +947,38 @@ As Bohdan, I want the app and project to be called NoLight like the repository, 
 #### Technical notes
 - Merged into `main` via PR #1 and #2 (commit d96eab9). Remaining: `xcodegen generate`, choose Team for both targets so the new App Group is registered, and check the build in Xcode.
 - New bundle ID = new app on the device: the old «Світло Черкаси» must be removed manually and widgets re-added.
+
+#### Prototype
+N/A — no UI
+
+
+### NOL-41: [Bug] Settings show version «1.0» instead of the git-based version
+**Type:** Bug · **Epic:** NOL-8 · **Sprint:** Sprint 1 · **Status:** In Progress
+
+#### Description
+After the latest merges, «Налаштування → Версія» (Settings → Version) shows «1.0» instead of the version computed from git (`1.0.<count>`), so NOL-37 (version changes only with code changes) is broken in real builds.
+
+#### Current behavior
+1. `main` at 6df37bf (after PR #11), `xcodegen generate`, build & run in Xcode.
+2. Open «Налаштування → Версія».
+3. Shows «1.0» (build 1) — the static values from `App/Info.plist` / `MARKETING_VERSION`, not `1.0.11 (збірка 11)`.
+- `SET_VERSION_PRINT_ONLY=1 scripts/set-version.sh` on the same commit prints `1.0.11 11`, so the script logic is correct.
+- The generated `NoLight.xcodeproj` has the «Set version from git» phase in both targets, but with **empty `inputPaths`/`outputPaths`**.
+
+#### Expected behavior
+- Every build shows the git-based version in «Версія», e.g. «1.0.12 (збірка 12)», for the app and the widget extension (both `CFBundleVersion` must match).
+- Docs-only commits keep the number; app-code commits bump it (unchanged NOL-37 rules).
+
+#### Acceptance criteria
+- **AC1.** Given a clean or incremental build of `main`, When I open «Налаштування → Версія», Then it shows `VERSION.<count>` and «збірка <count>» from `scripts/set-version.sh`.
+- **AC2.** Given `App/Info.plist` changed in the commit, When I build, Then the version is still the git-based one (not «1.0»).
+- **AC3.** Given the app and the widget are built together, Then both bundles have the same `CFBundleVersion`.
+
+#### Technical notes
+- Root cause: the post-build run script declares no inputs, so Xcode's parallel build does not order it after the `ProcessInfoPlistFile` task that writes `$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)`. When the Info.plist is re-processed after the script (e.g. NOL-40 changed `App/Info.plist` to add the `nolight` URL scheme), the static «1.0»/«1» overwrite the values the script set.
+- Fix: in `project.yml` declare `inputFiles: [$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)]` for the «Set version from git» script of both targets (`NoLight`, `NoLightWidget`), so the script always runs after Info.plist processing. Keep `basedOnDependencyAnalysis: false` (run every build).
+- Requires `xcodegen generate` after merging (the `.xcodeproj` is generated, not tracked).
+- Related: NOL-37 (8.3).
 
 #### Prototype
 N/A — no UI

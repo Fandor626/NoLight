@@ -28,6 +28,10 @@ targets:
     postBuildScripts:
       - name: Set version from git
         script: '"${SRCROOT}/scripts/set-version.sh"'
+        # Вхідний файл = оброблений Info.plist: так Xcode запускає скрипт ПІСЛЯ обробки plist
+        # і не затирає версію значеннями з App/Info.plist (NOL-41).
+        inputFiles:
+          - $(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)
         basedOnDependencyAnalysis: false
     entitlements:
       path: App/NoLight.entitlements
@@ -61,6 +65,10 @@ targets:
     postBuildScripts:
       - name: Set version from git
         script: '"${SRCROOT}/scripts/set-version.sh"'
+        # Вхідний файл = оброблений Info.plist: так Xcode запускає скрипт ПІСЛЯ обробки plist
+        # і не затирає версію значеннями з App/Info.plist (NOL-41).
+        inputFiles:
+          - $(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)
         basedOnDependencyAnalysis: false
     entitlements:
       path: Widget/NoLightWidget.entitlements
