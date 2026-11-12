@@ -22,7 +22,8 @@ struct ScheduleService: Sendable {
         guard !items.isEmpty else { throw ScheduleError.structureChanged }
 
         let selected = ScheduleSelector.select(items, now: currentDate)
-        let cutoff = KyivTime.addingDays(-1, to: KyivTime.dateKey(for: currentDate))
+        // Історія: зберігаємо дописи за останні `historyDays` днів, старіші видаляються (NOL-14).
+        let cutoff = HistoryWindow.oldestKey(today: KyivTime.dateKey(for: currentDate))
         var posts = (previous?.posts ?? [:]).filter { $0.key >= cutoff }
         var problems = Set<String>()
         var firstError: ScheduleError?

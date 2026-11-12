@@ -4,7 +4,11 @@ import SwiftUI
 struct PlaceDetailView: View {
     let placeID: UUID
     @Environment(AppState.self) private var state
-    @State private var showTomorrow = false
+    @State private var mode = DayMode.today
+    /// Вибраний минулий день (dateKey); nil — учора.
+    @State private var pastKey: String?
+
+    enum DayMode: Hashable { case earlier, today, tomorrow }
 
     /// Актуальна версія місця (назва могла змінитися); nil — якщо місце видалено.
     private var place: Place? { state.places.first { $0.id == placeID } }
@@ -26,10 +30,18 @@ struct PlaceDetailView: View {
         let subgroup = place.subgroup
         return TimelineView(.periodic(from: .now, by: 30)) { context in
             let p = SubgroupPresentation(snapshot: state.snapshot, subgroup: subgroup, now: context.date)
-            let day = showTomorrow ? p.tomorrow : p.today
-            let dayDate = showTomorrow
-                ? (KyivTime.startOfDay(dateKey: p.tomorrowKey) ?? context.date)
-                : context.date
+            let pastKeys = HistoryWindow.previousKeys(today: p.todayKey)
+            let selectedPast = pastKey.flatMap { pastKeys.contains($0) ? $0 : nil } ?? pastKeys[0]
+            let day: DaySchedule = {
+                switch mode {
+                case .today: return p.today
+                case .tomorrow: return p.tomorrow
+                case .earlier:
+                    return HistoryWindow.pastSchedule(snapshot: state.snapshot, subgroup: subgroup, dateKey: selectedPast)
+                }
+            }()
+            let dayDate = KyivTime.startOfDay(dateKey: day.dateKey) ?? context.date
+            let isPast = mode == .earlier
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -59,16 +71,26 @@ struct PlaceDetailView: View {
                     }
                     .card()
 
-                    Picker("День", selection: $showTomorrow) {
-                        Text("Сьогодні").tag(false)
-                        Text("Завтра").tag(true)
+                    Picker("День", selection: $mode) {
+                        Text("Раніше").tag(DayMode.earlier)
+                        Text("Сьогодні").tag(DayMode.today)
+                        Text("Завтра").tag(DayMode.tomorrow)
                     }
                     .pickerStyle(.segmented)
 
+                    if isPast {
+                        PastDayStrip(keys: pastKeys, selected: selectedPast) { pastKey = $0 }
+                    }
+
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(showTomorrow ? "Завтра, " + KyivTime.longDateString(dayDate) : "Графік на сьогодні")
-                            .font(.headline)
-                        if let title = day.kind.placeholderTitle {
+                        Text(dayTitle(mode: mode, date: dayDate)).font(.headline)
+                        if isPast && day.kind != .published {
+                            Label(HistoryWindow.unknownTitle, systemImage: "questionmark.circle")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 8)
+                        } else if let title = day.kind.placeholderTitle {
                             // Замість порожньої сірої шкали — зрозуміле повідомлення.
                             Label(title, systemImage: "calendar.badge.clock")
                                 .font(.title3.weight(.semibold))
@@ -77,7 +99,7 @@ struct PlaceDetailView: View {
                                 .padding(.vertical, 8)
                         } else {
                             TimelineBarView(intervals: day.intervals,
-                                            nowMinute: showTomorrow ? nil : p.minuteNow,
+                                            nowMinute: mode == .today ? p.minuteNow : nil,
                                             barHeight: 22,
                                             hourLabels: [0, 3, 6, 9, 12, 15, 18, 21, 24])
                             Legend()
@@ -85,7 +107,8 @@ struct PlaceDetailView: View {
                     }
                     .card()
 
-                    IntervalListView(day: day).card()
+                    IntervalListView(day: day, messageOverride: isPast && day.kind != .published
+                                     ? HistoryWindow.unknownMessage : nil).card()
 
                     VStack(alignment: .leading, spacing: 4) {
                         if let updated = p.updatedText { Text(updated) }
@@ -99,6 +122,42 @@ struct PlaceDetailView: View {
                 .padding()
             }
             .refreshable { await state.refresh() }
+        }
+    }
+}
+
+extension PlaceDetailView {
+    fileprivate func dayTitle(mode: DayMode, date: Date) -> String {
+        switch mode {
+        case .today: return "Графік на сьогодні"
+        case .tomorrow: return "Завтра, " + KyivTime.longDateString(date)
+        case .earlier: return KyivTime.longDateString(date).capitalized
+        }
+    }
+}
+
+/// Горизонтальний вибір одного з попередніх днів (новіші ліворуч).
+private struct PastDayStrip: View {
+    let keys: [String]
+    let selected: String
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(keys, id: \.self) { key in
+                    let isOn = key == selected
+                    Button { onSelect(key) } label: {
+                        Text(KyivTime.shortDayString(dateKey: key))
+                            .font(.subheadline.weight(isOn ? .semibold : .regular))
+                            .padding(.horizontal, 12).padding(.vertical, 6)
+                            .background(isOn ? Color.accentColor.opacity(0.18) : Color(uiColor: .secondarySystemGroupedBackground),
+                                        in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
+                }
+            }
         }
     }
 }
@@ -118,11 +177,13 @@ struct Legend: View {
 
 struct IntervalListView: View {
     let day: DaySchedule
+    /// Інший текст замість стандартного пояснення (напр., для минулого дня без даних).
+    var messageOverride: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Інтервали").font(.headline)
-            if let message = day.kind.placeholderMessage {
+            if let message = messageOverride ?? day.kind.placeholderMessage {
                 Text(message).font(.subheadline).foregroundStyle(.secondary)
             } else {
                 ForEach(Array(day.intervals.enumerated()), id: \.offset) { _, i in

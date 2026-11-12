@@ -75,6 +75,16 @@ enum KyivTime {
         return f.string(from: date)
     }
 
+    /// «11.11, вт» для вибору дня в історії.
+    static func shortDayString(dateKey: String) -> String {
+        guard let date = startOfDay(dateKey: dateKey) else { return dateKey }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "uk_UA")
+        f.timeZone = timeZone
+        f.dateFormat = "dd.MM, EE"
+        return f.string(from: date)
+    }
+
     static func shortDateTimeString(_ date: Date) -> String {
         let c = calendar.dateComponents([.day, .month, .hour, .minute], from: date)
         return String(format: "%02d.%02d %02d:%02d", c.day ?? 0, c.month ?? 0, c.hour ?? 0, c.minute ?? 0)

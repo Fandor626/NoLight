@@ -20,7 +20,7 @@ development_status:
   1-2-add-a-place: ready-for-testing  # NOL-11
   1-3-manage-places: ready-for-testing  # NOL-12
   1-4-place-details-today-tomorrow: ready-for-testing  # NOL-13
-  1-5-14-day-history: backlog  # NOL-14
+  1-5-14-day-history: review  # NOL-14
   epic-1-retrospective: optional
 
   epic-2: backlog  # NOL-2
@@ -67,7 +67,7 @@ development_status:
   8-2-launch-screen-and-widget-icon: backlog  # NOL-36
   8-3-version-only-on-code-change: ready-for-testing  # NOL-37
   8-4-rename-to-nolight: ready-for-testing  # NOL-38
-  8-5-version-overwritten-by-info-plist: review  # NOL-41 (bug)
+  8-5-version-overwritten-by-info-plist: ready-for-testing  # NOL-41 (bug)
   epic-8-retrospective: optional
 
   epic-9: backlog  # NOL-9
