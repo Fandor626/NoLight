@@ -94,6 +94,14 @@ struct SettingsView: View {
                     Link("Відкрити сайт Черкасиобленерго", destination: AppConfig.siteURL)
                 }
 
+                Section("Вигляд") {
+                    NavigationLink {
+                        ColorSettingsView()
+                    } label: {
+                        Label("Кольори", systemImage: "paintpalette")
+                    }
+                }
+
                 Section("Про застосунок") {
                     LabeledContent("Версія", value: AppVersion.display)
                     Text("Неофіційний застосунок, не пов’язаний з АТ «Черкасиобленерго». Завжди звіряйтеся з офіційними повідомленнями.")

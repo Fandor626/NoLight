@@ -1,31 +1,32 @@
 import SwiftUI
 import UIKit
 
-/// Приглушена палітра: менш агресивна за системні червоний/зелений, окремі відтінки для світлої й темної теми.
+/// Кольори станів беруться з налаштувань (NOL-32): окремі відтінки для світлої й темної теми.
 private extension UIColor {
-    static func dynamic(light: UIColor, dark: UIColor) -> UIColor {
-        UIColor { $0.userInterfaceStyle == .dark ? dark : light }
+    convenience init(_ c: RGBAColor) {
+        self.init(red: c.red, green: c.green, blue: c.blue, alpha: c.alpha)
     }
 
-    static let softGreen = dynamic(light: UIColor(red: 0.30, green: 0.67, blue: 0.46, alpha: 1),
-                                   dark: UIColor(red: 0.34, green: 0.66, blue: 0.48, alpha: 1))
-    static let softRed = dynamic(light: UIColor(red: 0.83, green: 0.40, blue: 0.38, alpha: 1),
-                                 dark: UIColor(red: 0.78, green: 0.42, blue: 0.40, alpha: 1))
+    static func themed(_ c: ThemedColor) -> UIColor {
+        UIColor { $0.userInterfaceStyle == .dark ? UIColor(c.dark) : UIColor(c.light) }
+    }
 }
 
 extension PowerState {
     var color: Color {
+        let theme = ColorSettings.shared.theme
         switch self {
-        case .available: return Color(uiColor: .softGreen)
-        case .outage: return Color(uiColor: .softRed)
+        case .available: return Color(uiColor: .themed(theme.available))
+        case .outage: return Color(uiColor: .themed(theme.outage))
         case .unknown: return Color(uiColor: .systemGray4)
         }
     }
 
     var textColor: Color {
+        let theme = ColorSettings.shared.theme
         switch self {
-        case .available: return Color(uiColor: .softGreen)
-        case .outage: return Color(uiColor: .softRed)
+        case .available: return Color(uiColor: .themed(theme.available))
+        case .outage: return Color(uiColor: .themed(theme.outage))
         case .unknown: return .secondary
         }
     }

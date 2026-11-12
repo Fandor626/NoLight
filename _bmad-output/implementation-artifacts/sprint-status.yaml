@@ -41,14 +41,14 @@ development_status:
   3-7-manual-mode-stops-widget-refresh: review  # NOL-42
 
   epic-4: in-progress  # NOL-4
-  4-1-period-statistics: review  # NOL-25
-  4-2-night-day-split: review  # NOL-26
-  4-3-night-bounds-settings: review  # NOL-27
+  4-1-period-statistics: ready-for-testing  # NOL-25
+  4-2-night-day-split: ready-for-testing  # NOL-26
+  4-3-night-bounds-settings: ready-for-testing  # NOL-27
   epic-4-retrospective: optional
 
   epic-5: in-progress  # NOL-5
-  5-1-preview-without-saving: review  # NOL-28
-  5-2-state-at-arrival-time: review  # NOL-29
+  5-1-preview-without-saving: ready-for-testing  # NOL-28
+  5-2-state-at-arrival-time: ready-for-testing  # NOL-29
   epic-5-retrospective: optional
 
   epic-6: in-progress  # NOL-6
@@ -57,8 +57,8 @@ development_status:
   6-3-widgets-mirror-place-cards: ready-for-testing  # NOL-40
   epic-6-retrospective: optional
 
-  epic-7: backlog  # NOL-7
-  7-1-colors-via-picker: backlog  # NOL-32
+  epic-7: in-progress  # NOL-7
+  7-1-colors-via-picker: review  # NOL-32
   7-2-color-presets: backlog  # NOL-33
   7-3-reset-colors: backlog  # NOL-34
   epic-7-retrospective: optional
