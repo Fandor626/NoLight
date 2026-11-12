@@ -8,6 +8,8 @@ struct SubgroupEntry: TimelineEntry {
     var title: String
     /// Вибране місце видалено в застосунку.
     var isPlaceDeleted = false
+    /// Місце для посилання nolight://place/{id} (nil для віджетів v1 без місця).
+    var placeID: UUID?
     /// Останнє оновлення не вдалося (після останнього успішного): показуємо збережений графік з позначкою.
     var refreshFailed = false
     var isPlaceholder = false
@@ -20,6 +22,7 @@ struct SubgroupEntry: TimelineEntry {
                              presentation: SubgroupPresentation(snapshot: snapshot, subgroup: subgroup, now: date),
                              title: resolution.title,
                              isPlaceDeleted: resolution == .deleted,
+                             placeID: { if case .place(let place) = resolution { return place.id } else { return nil } }(),
                              refreshFailed: failure?.isNewer(than: snapshot?.fetchedAt) ?? false)
     }
 }
@@ -73,5 +76,8 @@ struct SubgroupScheduleWidget: Widget {
 
 @main
 struct NoLightWidgetBundle: WidgetBundle {
-    var body: some Widget { SubgroupScheduleWidget() }
+    var body: some Widget {
+        SubgroupScheduleWidget()
+        PlacesListWidget()
+    }
 }

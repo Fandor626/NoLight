@@ -7,9 +7,10 @@ struct HomeView: View {
     @State private var showingManage = false
     @State private var renaming: Place?
     @State private var deleting: Place?
+    @State private var path: [Place] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             TimelineView(.periodic(from: .now, by: 30)) { context in
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -69,6 +70,12 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $showingManage) { ManagePlacesView() }
+            // Відкриття місця з віджета (nolight://place/{id}).
+            .onChange(of: state.openedPlaceID, initial: true) { _, id in
+                guard let id else { return }
+                if let place = state.places.first(where: { $0.id == id }) { path = [place] }
+                state.openedPlaceID = nil
+            }
             .placeActions(renaming: $renaming, deleting: $deleting)
         }
     }
@@ -90,34 +97,14 @@ struct EmptyStateView: View {
     }
 }
 
-/// Картка місця: назва, стан, найближча зміна, шкала 24 год і свіжість даних.
+/// Картка місця в застосунку — та сама `PlaceCardContent`, що й у віджетах (NOL-40).
 struct PlaceCardView: View {
     let name: String
     let presentation: SubgroupPresentation
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                SubgroupBadge(text: presentation.subgroup.id)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name).font(.subheadline.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-                    Text(presentation.headline)
-                        .font(.headline)
-                        .foregroundStyle(presentation.status.state.textColor)
-                    if let detail = presentation.detail {
-                        Text(detail).font(.subheadline).foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
-            }
-            TimelineBarView(intervals: presentation.today.intervals, nowMinute: presentation.minuteNow, barHeight: 16)
-            HStack {
-                if presentation.showsStaleWarning { StaleWarningLabel() }
-                Spacer()
-                if let updated = presentation.updatedText { Text(updated).foregroundStyle(.secondary) }
-            }
-            .font(.caption2)
+        PlaceCardContent(name: name, presentation: presentation, style: .app) {
+            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .padding(16)
         .background(Color(uiColor: .secondarySystemGroupedBackground),
