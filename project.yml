@@ -47,7 +47,12 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
             CFBundleURLSchemes: [nolight]
-        UILaunchScreen: {}
+        # Екран запуску (NOL-36): логотип на фоні systemGroupedBackground (#F2F2F7 / #000000),
+        # як у першого екрана, тож без «спалаху» при переході.
+        UILaunchScreen:
+          UIImageName: Logo
+          UIColorName: LaunchBackground
+          UIImageRespectsSafeAreaInsets: true
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers:
           - $(PRODUCT_BUNDLE_IDENTIFIER).refresh
