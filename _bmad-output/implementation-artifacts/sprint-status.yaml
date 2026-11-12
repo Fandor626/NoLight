@@ -64,7 +64,7 @@ development_status:
   epic-7-retrospective: optional
 
   epic-8: in-progress  # NOL-8
-  8-1-logo-and-app-icon: ready-for-testing  # NOL-35
+  8-1-logo-and-app-icon: review  # NOL-35
   8-2-launch-screen-and-widget-icon: backlog  # NOL-36
   8-3-version-only-on-code-change: ready-for-testing  # NOL-37
   8-4-rename-to-nolight: ready-for-testing  # NOL-38
