@@ -11,6 +11,9 @@ enum AppConfig {
     /// Після цього часу збережені дані більше не показуються як актуальні.
     static let expiredAfter: TimeInterval = 24 * 3600
 
+    /// Скільки попередніх днів графіків зберігається в кеші (NOL-14).
+    static let historyDays = 14
+
     static let fallbackAppGroupID = "group.com.example.NoLight"
 
     static var appGroupID: String {
