@@ -8,6 +8,7 @@ struct PlaceDetailView: View {
     /// Вибраний минулий день (dateKey); nil — учора.
     @State private var pastKey: String?
     @State private var showingSettings = false
+    @State private var showingComparison = false
 
     enum DayMode: Hashable { case earlier, today, tomorrow }
 
@@ -28,12 +29,20 @@ struct PlaceDetailView: View {
         .toolbar {
             if place != nil {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingSettings = true } label: { Image(systemName: "slider.horizontal.3") }
-                        .accessibilityLabel("Налаштування місця")
+                    Menu {
+                        Button { showingSettings = true } label: { Label("Налаштування місця", systemImage: "slider.horizontal.3") }
+                        if place?.region == .cherkasy {
+                            Button { showingComparison = true } label: {
+                                Label("Порівняння джерел", systemImage: "rectangle.split.2x1")
+                            }
+                        }
+                    } label: { Image(systemName: "ellipsis.circle") }
+                    .accessibilityLabel("Дії з місцем")
                 }
             }
         }
         .sheet(isPresented: $showingSettings) { PlaceSettingsView(placeID: placeID) }
+        .sheet(isPresented: $showingComparison) { SourceComparisonView(placeID: placeID) }
     }
 
     private func content(place: Place) -> some View {

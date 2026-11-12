@@ -128,6 +128,19 @@ final class AppState {
         return true
     }
 
+    /// Для «Порівняння джерел» (NOL-18): обидва джерела Черкас — кеш одразу, мережа паралельно.
+    func loadComparison(forceRefresh: Bool = false) async {
+        let keys = [ScheduleSourceKey.cherkasySite, ScheduleSourceKey(source: .outageDataAPI, region: .cherkasy)]
+        for key in keys where snapshots[key] == nil {
+            snapshots[key] = await repository(for: key).cachedSnapshot()
+        }
+        let needsRefresh = forceRefresh || keys.contains { key in
+            guard let fetched = snapshots[key]?.fetchedAt else { return true }
+            return Date().timeIntervalSince(fetched) > 15 * 60
+        }
+        if needsRefresh { await refresh(keys: keys) }
+    }
+
     /// Змінює джерело місця (NOL-17) і одразу завантажує графік з нового джерела.
     func setSource(_ source: PlaceSource, for place: Place) {
         guard place.availableSources.contains(source),

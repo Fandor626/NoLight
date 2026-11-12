@@ -27,7 +27,7 @@ development_status:
   2-1-any-region-from-api: review  # NOL-15
   2-2-trust-and-freshness-labels: review  # NOL-16
   2-3-source-choice-for-cherkasy: review  # NOL-17
-  2-4-source-comparison-screen: backlog  # NOL-18
+  2-4-source-comparison-screen: review  # NOL-18
   epic-2-retrospective: optional
 
   epic-3: in-progress  # NOL-3
