@@ -49,6 +49,7 @@ development_status:
   epic-5: in-progress  # NOL-5
   5-1-preview-without-saving: ready-for-testing  # NOL-28
   5-2-state-at-arrival-time: ready-for-testing  # NOL-29
+  5-3-queue-by-address: backlog  # NOL-44
   epic-5-retrospective: optional
 
   epic-6: in-progress  # NOL-6
@@ -73,4 +74,10 @@ development_status:
 
   epic-9: in-progress  # NOL-9
   9-1-countdown-to-next-change: review  # NOL-39
+  9-2-keep-countdown-on-lock-screen: backlog  # NOL-43
   epic-9-retrospective: optional
+
+  epic-10: backlog  # NOL-45 (Apple Watch)
+  10-1-watch-app-chosen-place: backlog  # NOL-46
+  10-2-watch-widget-timeline: backlog  # NOL-47
+  epic-10-retrospective: optional

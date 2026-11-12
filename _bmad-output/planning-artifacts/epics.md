@@ -35,7 +35,7 @@ Estimates are set by Bohdan in Jira and are not stored here.
 | NOL Sprint 4 | Notifications | NOL-21 (3.3), NOL-22 (3.4), NOL-23 (3.5), NOL-24 (3.6) |
 | NOL Sprint 5 | Statistics and travel mode | NOL-25 (4.1), NOL-26 (4.2), NOL-27 (4.3), NOL-28 (5.1), NOL-29 (5.2), NOL-42 (3.7) |
 | NOL Sprint 6 | Look and brand | NOL-32 (7.1), NOL-33 (7.2), NOL-34 (7.3), NOL-35 (8.1), NOL-36 (8.2) |
-| NOL Sprint 7 | Optional: Live Activity | NOL-39 (9.1) |
+| NOL Sprint 7 | Live Activity, address lookup, Apple Watch | NOL-39 (9.1), NOL-43 (9.2), NOL-44 (5.3), NOL-46 (10.1), NOL-47 (10.2) |
 
 Order inside a sprint follows dependencies (top to bottom). Jira sprint IDs on board 56: NOL Sprint 1 = 1634 … NOL Sprint 7 = 1640.
 
@@ -680,6 +680,45 @@ As Bohdan, I want to enter my arrival time or trip duration, so that I know whet
 #### Prototype
 TBD — Claude artifact prototype
 
+### NOL-44: 5.3 Find the queue by address
+**Type:** Story · **Epic:** NOL-5 · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+As Bohdan, I want to enter the address I'm travelling to, so that the app finds its queue and subgroup itself when I don't know them.
+
+#### Expected behavior
+- In «Подорож» (Travel) there is a «За адресою» (By address) option next to the region → queue → subgroup cascade.
+- I type a settlement, street and house number with suggestions; the app shows the found region, queue and subgroup and then the usual schedule and arrival check.
+- If the address isn't found or the region has no address data, I see «Не вдалося визначити чергу» with a link to the oblenergo lookup and can pick the queue manually.
+- «Зберегти як місце» works with the found parameters.
+
+#### Flows
+1. «Подорож» → «За адресою».
+2. Type the settlement → pick from suggestions (region is set from it).
+3. Type the street → pick; type the house number.
+4. App resolves the address → region + queue + subgroup.
+   - Found → schedule preview (NOL-28) + arrival check (NOL-29).
+   - Several matches (e.g. a street split between queues) → list with house ranges to choose from.
+   - Not found / no data for the region → message + manual cascade + link to the oblenergo site.
+
+#### Acceptance criteria
+- **AC1.** Given a Cherkasy region address that is in the oblenergo lists, When I enter it, Then the app shows its queue and subgroup and the schedule.
+- **AC2.** Given an address split between several queues, Then I can choose the right house range.
+- **AC3.** Given an address that can't be resolved, Then I see «Не вдалося визначити чергу», a link to the oblenergo lookup and the manual cascade.
+- **AC4.** Given a found address, When I tap «Зберегти як місце», Then the place is created with the found region, queue and subgroup, and the address is kept in the place.
+- **AC5.** Given no internet, Then previously downloaded address data still works, or a clear offline message is shown.
+
+#### Technical notes
+- **Spike first:** the Cherkasy source is the oblenergo address lists by queue (`https://cherkasyoblenergo.com/off`, section «Черги ГПВ/ГАВ»). Check the format (HTML table, PDF or search form), size, update frequency and whether it can be cached on the device.
+- Other regions: OE_OUTAGE_DATA has no addresses; each oblenergo has its own lookup (search form or by account number). Start with Cherkasy; other regions as follow-up tasks per source. **Open question:** which regions after Cherkasy?
+- New `AddressQueueService` (Shared) behind a protocol like `ScheduleSourcing`; parser + fixtures + tests; normalized matching (street type prefixes, apostrophes, «вул.» / «вулиця», house letters 12-А).
+- Optional `Place.address: String?` (migration-safe, nil for old places).
+- Not a geocoder: we match the oblenergo lists, so the address must be typed as in those lists; suggestions come from the lists themselves.
+- Depends on: NOL-28, NOL-29.
+
+#### Prototype
+TBD — Claude artifact prototype
+
 ---
 
 ## NOL-6: Epic 6: Widgets for my places
@@ -1049,6 +1088,129 @@ As Bohdan, I want a countdown on the Lock Screen, so that I don't have to open t
 #### Technical notes
 - `ActivityAttributes` with place name + next change `Date`; use `Text(timerInterval:)` so it updates without pushes (no server).
 - Needs `NSSupportsLiveActivities = YES` in `project.yml`; Live Activity UI lives in the widget extension.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+
+### NOL-43: 9.2 Keep the countdown on the Lock Screen
+**Type:** Story · **Epic:** NOL-9 · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+As Bohdan, I want the Lock Screen countdown to be removed only from the app, so that an accidental swipe or collapse doesn't make it disappear.
+
+#### Expected behavior
+- The countdown stays on the Lock Screen until I stop it in the app («Зупинити відлік»).
+- If iOS removes it anyway (I swiped it away, or the 8-hour limit passed), the app brings it back the next time it runs, without me starting it again.
+- The place settings show whether the countdown is «Завжди на екрані» (always on).
+
+#### Flows
+1. Place details → «Відлік на заблокованому екрані» → the place is marked «keep countdown».
+2. User swipes the activity away on the Lock Screen → iOS reports `.dismissed`.
+3. Next app launch / foreground / background refresh → the app sees the place is still marked → starts a new activity.
+   - Stopped from the app → the mark is cleared, nothing is restarted.
+4. 8-hour limit → the app renews the activity on the next run before or after the limit.
+
+#### Acceptance criteria
+- **AC1.** Given a running countdown, When I swipe it away on the Lock Screen, Then it comes back the next time the app runs (foreground or background refresh).
+- **AC2.** Given a running countdown, When I tap «Зупинити відлік» in the app, Then it disappears and does not come back.
+- **AC3.** Given the 8-hour limit is near, When the app runs, Then the countdown is renewed without my action.
+- **AC4.** Given Live Activities are disabled in Settings, Then the app shows why the countdown can't be kept.
+
+#### Technical notes
+- **iOS limit:** an app cannot block the user from dismissing a Live Activity on the Lock Screen, and `Activity.request` works only while the app is in the foreground (push-to-start needs an APNs server). So «not dismissible» is implemented as «restored automatically».
+- Persist the «keep countdown» flag per place (e.g. `Place.keepsLiveActivity` or a set in the App Group); observe `activityStateUpdates` for `.dismissed` / `.ended`.
+- `App/LiveActivityManager.swift`: `ensureRunning(places:)` on app start/foreground; renew activities older than ~7.5 h.
+- Background refresh cannot start a new activity — it can only update a running one; restoration happens on the next foreground launch. Document this in the UI copy.
+- **Open question:** should we add push-to-start later (needs a small server with APNs key)?
+- Depends on: NOL-39.
+
+#### Prototype
+TBD — Claude artifact prototype
+
+---
+
+## NOL-45: Epic 10: Apple Watch
+**Type:** Epic · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+Bohdan sees one chosen place on his Apple Watch Series 11: the state now, a short timeline around now and the time until the next change, without taking out the phone.
+
+#### Expected behavior
+- A watchOS app where I choose one of my places (synced from the iPhone).
+- A watch widget for the Smart Stack and watch faces with a short timeline: 2 hours before, now, 2 hours after.
+- Data stays fresh even when the iPhone is away (the watch can fetch schedules itself).
+
+#### Acceptance criteria
+- **AC1.** All stories NOL-46…NOL-47 are done.
+- **AC2.** Works on Apple Watch Series 11 with the current watchOS; colors follow the app's color settings.
+
+#### Technical notes
+- New xcodegen targets: `NoLightWatch` (watchOS app) and `NoLightWatchWidget` (WidgetKit extension for watchOS). Shared code reused (`Shared/` compiles for watchOS: no UIKit in models).
+- The App Group is not shared between iPhone and Watch → sync places, the chosen place and color theme via WatchConnectivity (`updateApplicationContext`).
+- The watch fetches schedules over its own network with the same `ScheduleRepository` (cache in the watch's App Group for the watch widget).
+- Watch widget families: `accessoryRectangular` (timeline card, Smart Stack), `accessoryCircular` (countdown ring), `accessoryInline` (text).
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-46: 10.1 Watch app with my chosen place
+**Type:** Story · **Epic:** NOL-45 · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+As Bohdan, I want a NoLight app on my Apple Watch with one place I choose, so that I can check the power state from my wrist.
+
+#### Expected behavior
+- The watch app shows my places from the iPhone; I pick one as «На годиннику» (On the watch).
+- The main screen shows the place card: name, state («Світло є» / «Світла немає» / «Невідомо»), time until the next change and a short timeline (−2 h … now … +2 h).
+- Stale or missing data is shown as on the iPhone («Застаріло», «Невідомо»), never as «Світло є».
+
+#### Flows
+1. iPhone: places change → sent to the watch via WatchConnectivity.
+2. Watch app: list of places → choose one (also settable from the iPhone place settings: «Показувати на годиннику»).
+3. Watch fetches the schedule for that place's source itself and caches it; falls back to data sent from the iPhone.
+
+#### Acceptance criteria
+- **AC1.** Given places on the iPhone, When I open the watch app, Then I see them and can choose one.
+- **AC2.** Given a chosen place, Then the watch shows its state, the time until the next change and the −2 h … +2 h timeline.
+- **AC3.** Given the iPhone is not nearby, When the watch has internet, Then it refreshes the schedule itself.
+- **AC4.** Given data older than 24 h or no data, Then the watch shows «Невідомо» / «Застаріло», not «Світло є».
+
+#### Technical notes
+- New targets in `project.yml`: `NoLightWatch` (watchOS app, embedded in the iOS app); deployment target = current watchOS for Series 11.
+- `Shared/` must compile for watchOS: move UIKit-only code (`UIColor` in `SharedViews.swift`) behind `#if canImport(UIKit)` / SwiftUI-only colors.
+- `WatchSync` (iOS + watchOS): `WCSession.updateApplicationContext` with places, chosen place id and `ColorTheme`.
+- New pure helper `TimelineWindow` (Shared): slice of absolute intervals for [now − 2 h, now + 2 h], crossing midnight via today/tomorrow schedules; unit-tested.
+- Depends on: NOL-40 (place cards), NOL-32 (colors).
+
+#### Prototype
+TBD — Claude artifact prototype
+
+### NOL-47: 10.2 Watch widget with a ±2 h timeline
+**Type:** Story · **Epic:** NOL-45 · **Sprint:** Sprint 7 · **Status:** To Do
+
+#### Description
+As Bohdan, I want a widget on my watch face and in the Smart Stack with the chosen place, so that I see the schedule around now at a glance.
+
+#### Expected behavior
+- Rectangular widget (Smart Stack and watch faces): place name, state, a short horizontal timeline from 2 hours before to 2 hours after now with a «now» marker, and the time until the next change.
+- Circular complication: a ring showing the countdown to the next change, colored by the current state.
+- Inline complication: «Світло до 18:00» / «Без світла до 20:30».
+- The widget moves to the top of the Smart Stack shortly before a change.
+
+#### Acceptance criteria
+- **AC1.** Given a chosen place, When I add the rectangular widget, Then I see the state and the −2 h … +2 h timeline with the now marker and the countdown.
+- **AC2.** Given the next change is within the window, Then the timeline shows the change point and the countdown updates without opening the app.
+- **AC3.** Given the window crosses midnight, Then tomorrow's schedule is used, or that part is gray «Невідомо» if not published.
+- **AC4.** Given 30 minutes before a change, Then the widget is given high relevance in the Smart Stack.
+- **AC5.** Given the color settings on the iPhone, Then the watch widget uses the same colors.
+
+#### Technical notes
+- New target `NoLightWatchWidget` (WidgetKit, watchOS); families `accessoryRectangular`, `accessoryCircular`, `accessoryInline`.
+- Reuse `TimelineWindow` (NOL-46) and `WidgetTimelinePlanner` for entries at change points; `Text(timerInterval:)` for the countdown.
+- Smart Stack relevance: `TimelineEntryRelevance` (or `RelevanceConfiguration` on newer watchOS) around change times.
+- Tinted / accented watch faces: use `widgetAccentable` so states stay readable in monochrome.
+- Depends on: NOL-46 (watch app and sync).
 
 #### Prototype
 TBD — Claude artifact prototype
