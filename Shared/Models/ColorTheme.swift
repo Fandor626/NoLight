@@ -114,4 +114,10 @@ final class ColorSettings: @unchecked Sendable {
             store.save(newValue)
         }
     }
+
+    /// «Скинути» (NOL-34): прибирає збережені кольори, діють стандартні.
+    func reset() {
+        store.reset()
+        stored = .default
+    }
 }

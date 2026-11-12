@@ -5,6 +5,7 @@ import WidgetKit
 /// «Кольори» (NOL-32): вибір кольору «Світло є» і «Відключення» для світлої й темної теми.
 struct ColorSettingsView: View {
     @State private var colors = ColorSettings.shared
+    @State private var confirmingReset = false
 
     var body: some View {
         Form {
@@ -50,6 +51,20 @@ struct ColorSettingsView: View {
                 picker("Світло є", \.available.dark)
                 picker("Відключення", \.outage.dark)
             }
+
+            Section {
+                Button("Скинути кольори", role: .destructive) { confirmingReset = true }
+                    .disabled(colors.theme.isDefault)
+            } footer: {
+                Text("Повертає стандартні м’які зелений і червоний для обох тем.")
+            }
+        }
+        .confirmationDialog("Повернути стандартні кольори?", isPresented: $confirmingReset, titleVisibility: .visible) {
+            Button("Скинути", role: .destructive) {
+                colors.reset()
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+            Button("Скасувати", role: .cancel) {}
         }
         .navigationTitle("Кольори")
         .navigationBarTitleDisplayMode(.inline)

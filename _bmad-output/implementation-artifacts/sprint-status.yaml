@@ -59,7 +59,7 @@ development_status:
   epic-7: in-progress  # NOL-7
   7-1-colors-via-picker: review  # NOL-32
   7-2-color-presets: review  # NOL-33
-  7-3-reset-colors: backlog  # NOL-34
+  7-3-reset-colors: review  # NOL-34
   epic-7-retrospective: optional
 
   epic-8: in-progress  # NOL-8
