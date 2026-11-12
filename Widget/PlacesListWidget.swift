@@ -106,7 +106,8 @@ struct PlacesListWidgetView: View {
                     ForEach(items) { item in
                         Link(destination: DeepLink.place(item.id)) {
                             PlaceCardContent(name: item.place.name, presentation: item.presentation,
-                                             style: .listRow, refreshFailed: item.refreshFailed)
+                                             style: .listRow, refreshFailed: item.refreshFailed,
+                                             isUnofficial: item.place.sourceKey.source == .outageDataAPI)
                         }
                     }
                     Spacer(minLength: 0)

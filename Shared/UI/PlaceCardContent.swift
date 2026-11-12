@@ -13,6 +13,8 @@ struct PlaceCardContent<Accessory: View>: View {
     var style: PlaceCardStyle = .app
     /// Останнє оновлення не вдалося: показано збережений графік.
     var refreshFailed = false
+    /// Графік з неофіційного API → позначка «неофіційне джерело» (NOL-16).
+    var isUnofficial = false
     @ViewBuilder var accessory: () -> Accessory
 
     private var p: SubgroupPresentation { presentation }
@@ -82,6 +84,7 @@ struct PlaceCardContent<Accessory: View>: View {
             HStack(spacing: 8) {
                 SubgroupBadge(text: p.subgroup.id, compact: true)
                 Text(name).font(.subheadline.weight(.semibold)).lineLimit(1)
+                if isUnofficial { UnofficialSourceBadge(compact: true) }
                 Spacer(minLength: 4)
                 Text(p.headline)
                     .font(.system(.subheadline, design: .rounded, weight: .semibold))
@@ -100,9 +103,12 @@ struct PlaceCardContent<Accessory: View>: View {
     // MARK: - Parts
 
     private var nameText: some View {
-        Text(name)
-            .font(style == .app ? .subheadline.weight(.semibold) : .caption.weight(.semibold))
-            .foregroundStyle(.secondary).lineLimit(1)
+        HStack(spacing: 6) {
+            Text(name)
+                .font(style == .app ? .subheadline.weight(.semibold) : .caption.weight(.semibold))
+                .foregroundStyle(.secondary).lineLimit(1)
+            if isUnofficial { UnofficialSourceBadge(compact: style == .widgetSmall) }
+        }
     }
 
     @ViewBuilder
@@ -110,9 +116,12 @@ struct PlaceCardContent<Accessory: View>: View {
         if refreshFailed {
             Image(systemName: "wifi.exclamationmark").font(.caption).foregroundStyle(.orange)
                 .accessibilityLabel("Не вдалося оновити, показано збережений графік")
+        } else if p.showsExpiredWarning {
+            Image(systemName: "clock.badge.exclamationmark.fill").font(.caption).foregroundStyle(.red)
+                .accessibilityLabel(FreshnessCopy.expired)
         } else if p.showsStaleWarning {
             Image(systemName: "exclamationmark.triangle.fill").font(.caption).foregroundStyle(.orange)
-                .accessibilityLabel("Дані можуть бути застарілими")
+                .accessibilityLabel(FreshnessCopy.stale)
         }
     }
 
@@ -120,6 +129,8 @@ struct PlaceCardContent<Accessory: View>: View {
         HStack {
             if refreshFailed {
                 Label("Не вдалося оновити", systemImage: "wifi.exclamationmark").foregroundStyle(.orange)
+            } else if p.showsExpiredWarning {
+                ExpiredWarningLabel()
             } else if p.showsStaleWarning {
                 StaleWarningLabel()
             }
@@ -132,7 +143,9 @@ struct PlaceCardContent<Accessory: View>: View {
 }
 
 extension PlaceCardContent where Accessory == EmptyView {
-    init(name: String, presentation: SubgroupPresentation, style: PlaceCardStyle = .app, refreshFailed: Bool = false) {
-        self.init(name: name, presentation: presentation, style: style, refreshFailed: refreshFailed) { EmptyView() }
+    init(name: String, presentation: SubgroupPresentation, style: PlaceCardStyle = .app,
+         refreshFailed: Bool = false, isUnofficial: Bool = false) {
+        self.init(name: name, presentation: presentation, style: style, refreshFailed: refreshFailed,
+                  isUnofficial: isUnofficial) { EmptyView() }
     }
 }

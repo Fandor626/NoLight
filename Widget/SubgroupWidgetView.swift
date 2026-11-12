@@ -29,14 +29,14 @@ struct SubgroupWidgetView: View {
                 switch family {
                 case .systemSmall:
                     PlaceCardContent(name: entry.title, presentation: p, style: .widgetSmall,
-                                     refreshFailed: entry.refreshFailed) { RefreshButton() }
+                                     refreshFailed: entry.refreshFailed, isUnofficial: entry.isUnofficial) { RefreshButton() }
                 case .systemMedium:
                     PlaceCardContent(name: entry.title, presentation: p, style: .widgetMedium,
-                                     refreshFailed: entry.refreshFailed) { RefreshButton() }
+                                     refreshFailed: entry.refreshFailed, isUnofficial: entry.isUnofficial) { RefreshButton() }
                 default:
                     VStack(alignment: .leading, spacing: 10) {
                         PlaceCardContent(name: entry.title, presentation: p, style: .widgetLarge,
-                                         refreshFailed: entry.refreshFailed) { RefreshButton() }
+                                         refreshFailed: entry.refreshFailed, isUnofficial: entry.isUnofficial) { RefreshButton() }
                         LargeExtras(p: p)
                         Spacer(minLength: 0)
                     }

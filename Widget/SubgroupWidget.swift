@@ -10,6 +10,8 @@ struct SubgroupEntry: TimelineEntry {
     var isPlaceDeleted = false
     /// Місце для посилання nolight://place/{id} (nil для віджетів v1 без місця).
     var placeID: UUID?
+    /// Графік з неофіційного API (NOL-16).
+    var isUnofficial = false
     /// Останнє оновлення не вдалося (після останнього успішного): показуємо збережений графік з позначкою.
     var refreshFailed = false
     var isPlaceholder = false
@@ -23,6 +25,7 @@ struct SubgroupEntry: TimelineEntry {
                              title: resolution.title,
                              isPlaceDeleted: resolution == .deleted,
                              placeID: { if case .place(let place) = resolution { return place.id } else { return nil } }(),
+                             isUnofficial: resolution.sourceKey.source == .outageDataAPI,
                              refreshFailed: failure?.isNewer(than: snapshot?.fetchedAt) ?? false)
     }
 }
