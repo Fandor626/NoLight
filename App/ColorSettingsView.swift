@@ -16,6 +16,31 @@ struct ColorSettingsView: View {
                 Text("Зміни одразу видно в застосунку й у віджетах.")
             }
 
+            Section {
+                ForEach(ColorPreset.all) { preset in
+                    Button { apply(preset.theme) } label: {
+                        HStack(spacing: 12) {
+                            PresetSwatch(theme: preset.theme)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(preset.title).foregroundStyle(.primary)
+                                if let note = preset.note {
+                                    Text(note).font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            if ColorPreset.matching(colors.theme) == preset {
+                                Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                            }
+                        }
+                    }
+                    .accessibilityAddTraits(ColorPreset.matching(colors.theme) == preset ? .isSelected : [])
+                }
+            } header: {
+                Text("Готові набори")
+            } footer: {
+                if ColorPreset.matching(colors.theme) == nil { Text("Зараз вибрано власні кольори.") }
+            }
+
             Section("Світла тема") {
                 picker("Світло є", \.available.light)
                 picker("Відключення", \.outage.light)
@@ -44,6 +69,21 @@ struct ColorSettingsView: View {
     private func apply(_ theme: ColorTheme) {
         colors.theme = theme
         WidgetCenter.shared.reloadAllTimelines()
+    }
+}
+
+/// Два кружечки кольорів пресету в поточній темі.
+private struct PresetSwatch: View {
+    let theme: ColorTheme
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        HStack(spacing: -4) {
+            Circle().fill(Color(rgba: theme.available.color(isDark: scheme == .dark)))
+            Circle().fill(Color(rgba: theme.outage.color(isDark: scheme == .dark)))
+        }
+        .frame(width: 40, height: 22)
+        .accessibilityHidden(true)
     }
 }
 
