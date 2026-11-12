@@ -105,6 +105,10 @@ struct Place: Identifiable, Hashable, Codable, Sendable {
     var warnBeforeOutageMinutes: Int? = nil
     /// За скільки хвилин попереджати перед поверненням світла; nil — вимкнено (NOL-22).
     var warnBeforeReturnMinutes: Int? = nil
+    /// Сповіщати про зміну графіка (NOL-23); nil у старих збережених місцях = вимкнено.
+    var notifyScheduleChanges: Bool? = nil
+
+    var notifiesScheduleChanges: Bool { notifyScheduleChanges ?? false }
 
     /// Варіанти часу попередження.
     static let warningLeadOptions = [5, 10, 15, 30, 60]
