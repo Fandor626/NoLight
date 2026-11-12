@@ -6,28 +6,41 @@ actor ScheduleRepository {
     private let cache: ScheduleCaching
     private let now: @Sendable () -> Date
     private let onUpdate: (@Sendable () -> Void)?
+    private let status: RefreshStatusStore?
 
     init(service: ScheduleService, cache: ScheduleCaching,
          now: @escaping @Sendable () -> Date = { Date() },
+         status: RefreshStatusStore? = nil,
          onUpdate: (@Sendable () -> Void)? = nil) {
         self.service = service
         self.cache = cache
         self.now = now
+        self.status = status
         self.onUpdate = onUpdate
     }
 
     func cachedSnapshot() -> ScheduleSnapshot? { cache.load() }
 
     /// При будь-якій помилці кеш залишається недоторканим.
+    /// Результат (успіх чи помилка) записується в `status`, щоб віджети могли показати, що оновити не вдалося.
     func refresh() async throws -> ScheduleSnapshot {
-        let snapshot = try await service.fetchLatest(previous: cache.load())
         do {
-            try cache.save(snapshot)
+            let snapshot = try await service.fetchLatest(previous: cache.load())
+            do {
+                try cache.save(snapshot)
+            } catch {
+                throw ScheduleError.invalidData("Не вдалося зберегти дані на пристрої.")
+            }
+            status?.lastFailure = nil
+            onUpdate?()
+            return snapshot
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
-            throw ScheduleError.invalidData("Не вдалося зберегти дані на пристрої.")
+            let message = (error as? ScheduleError)?.message ?? ScheduleError.serverUnavailable(status: nil).message
+            status?.lastFailure = RefreshFailure(at: now(), message: message)
+            throw error
         }
-        onUpdate?()
-        return snapshot
     }
 
     /// Для віджетів: оновлює дані, лише якщо кеш старіший за `maxAge`; при невдачі повертає кеш.
@@ -47,7 +60,8 @@ extension ScheduleRepository {
         let session = URLSession(configuration: config)
         let service = ScheduleService(fetcher: URLSessionHTMLFetcher(session: session),
                                       newsListURL: AppConfig.newsListURL)
-        return ScheduleRepository(service: service, cache: FileScheduleCache.appGroup(), onUpdate: onUpdate)
+        return ScheduleRepository(service: service, cache: FileScheduleCache.appGroup(),
+                                  status: .shared, onUpdate: onUpdate)
     }
 }
 

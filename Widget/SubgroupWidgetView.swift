@@ -27,9 +27,9 @@ struct SubgroupWidgetView: View {
                 DeletedPlaceView()
             } else {
                 switch family {
-                case .systemSmall: SmallWidgetView(p: p, title: entry.title)
-                case .systemMedium: MediumWidgetView(p: p, title: entry.title)
-                default: LargeWidgetView(p: p, title: entry.title)
+                case .systemSmall: SmallWidgetView(p: p, title: entry.title, refreshFailed: entry.refreshFailed)
+                case .systemMedium: MediumWidgetView(p: p, title: entry.title, refreshFailed: entry.refreshFailed)
+                default: LargeWidgetView(p: p, title: entry.title, refreshFailed: entry.refreshFailed)
                 }
             }
         }
@@ -52,6 +52,19 @@ private struct DeletedPlaceView: View {
     }
 }
 
+/// Позначка «оновити не вдалося»: графік показується зі збереженого кешу.
+private struct RefreshFailedLabel: View {
+    var compact = false
+    var body: some View {
+        if compact {
+            Image(systemName: "wifi.exclamationmark").font(.caption).foregroundStyle(.orange)
+                .accessibilityLabel("Не вдалося оновити, показано збережений графік")
+        } else {
+            Label("Не вдалося оновити", systemImage: "wifi.exclamationmark").foregroundStyle(.orange)
+        }
+    }
+}
+
 /// Назва місця над станом.
 private struct PlaceTitle: View {
     let title: String
@@ -63,14 +76,18 @@ private struct PlaceTitle: View {
 private struct SmallWidgetView: View {
     let p: SubgroupPresentation
     let title: String
+    let refreshFailed: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 SubgroupBadge(text: p.subgroup.id, compact: true)
                 Spacer()
-                if p.showsStaleWarning {
+                if refreshFailed {
+                    RefreshFailedLabel(compact: true)
+                } else if p.showsStaleWarning {
                     Image(systemName: "exclamationmark.triangle.fill").font(.caption).foregroundStyle(.orange)
+                        .accessibilityLabel("Дані можуть бути застарілими")
                 }
                 RefreshButton()
             }
@@ -92,6 +109,7 @@ private struct SmallWidgetView: View {
 private struct MediumWidgetView: View {
     let p: SubgroupPresentation
     let title: String
+    let refreshFailed: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -113,7 +131,9 @@ private struct MediumWidgetView: View {
             TimelineBarView(intervals: p.today.intervals, nowMinute: p.minuteNow, barHeight: 18,
                             hourLabels: [0, 3, 6, 9, 12, 15, 18, 21, 24])
             HStack {
-                if p.showsStaleWarning {
+                if refreshFailed {
+                    RefreshFailedLabel()
+                } else if p.showsStaleWarning {
                     Label("Дані можуть бути застарілими", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                 } else if p.today.kind == .published {
@@ -132,6 +152,7 @@ private struct MediumWidgetView: View {
 private struct LargeWidgetView: View {
     let p: SubgroupPresentation
     let title: String
+    let refreshFailed: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -165,7 +186,9 @@ private struct LargeWidgetView: View {
             }
             Spacer(minLength: 0)
             HStack {
-                if p.showsStaleWarning {
+                if refreshFailed {
+                    RefreshFailedLabel()
+                } else if p.showsStaleWarning {
                     Label("Дані можуть бути застарілими", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                 }
