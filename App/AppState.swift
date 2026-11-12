@@ -96,6 +96,7 @@ final class AppState {
                 break
             }
         }
+        await replanNotifications()
     }
 
     func addPlace(_ place: Place) {
@@ -163,5 +164,26 @@ final class AppState {
     private func save() {
         placeStore.places = places
         WidgetCenter.shared.reloadAllTimelines()
+        Task { await replanNotifications() }
+    }
+
+    /// Попередження перед відключенням (NOL-21): переплановуються після оновлення даних і будь-якої зміни місць.
+    func replanNotifications() async {
+        let snaps = snapshots
+        await NotificationScheduler.replan(places: places, snapshot: { snaps[$0.sourceKey] })
+    }
+
+    /// Вмикає (хвилини) або вимикає (nil) попередження перед відключенням для місця.
+    func setWarningBeforeOutage(_ minutes: Int?, for place: Place) {
+        guard let index = places.firstIndex(where: { $0.id == place.id }) else { return }
+        places[index].warnBeforeOutageMinutes = minutes
+        if minutes != nil {
+            Task {
+                await NotificationScheduler.requestAuthorization()
+                save()
+            }
+        } else {
+            save()
+        }
     }
 }

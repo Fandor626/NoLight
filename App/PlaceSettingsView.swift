@@ -32,6 +32,22 @@ struct PlaceSettingsView: View {
                     } footer: {
                         Text(footer(for: place))
                     }
+                    Section {
+                        Toggle("Перед відключенням", isOn: Binding(
+                            get: { place.warnBeforeOutageMinutes != nil },
+                            set: { state.setWarningBeforeOutage($0 ? Place.defaultWarningLead : nil, for: place) }))
+                        if let lead = place.warnBeforeOutageMinutes {
+                            Picker("За скільки", selection: Binding(
+                                get: { lead },
+                                set: { state.setWarningBeforeOutage($0, for: place) })) {
+                                ForEach(Place.warningLeadOptions, id: \.self) { Text("\($0) хв").tag($0) }
+                            }
+                        }
+                    } header: {
+                        Text("Попередження")
+                    } footer: {
+                        Text("Локальне сповіщення за графіком — наприклад, щоб вчасно запустити генератор. Плануються найближчі відключення; список оновлюється після кожного оновлення графіка.")
+                    }
                 } else {
                     ContentUnavailableView("Місце видалено", systemImage: "mappin.slash")
                 }
