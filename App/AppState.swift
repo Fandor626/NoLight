@@ -205,6 +205,8 @@ final class AppState {
     func replanNotifications() async {
         let snaps = snapshots
         await NotificationScheduler.replan(places: places, snapshot: { snaps[$0.sourceKey] })
+        // Live Activity місць (NOL-39) — новий стан і час зміни.
+        await LiveActivityManager.update(places: places, snapshot: { snaps[$0.sourceKey] })
     }
 
     /// Сповіщення про зміну графіка місця (NOL-23).

@@ -10,6 +10,9 @@ struct PlaceDetailView: View {
     @State private var showingSettings = false
     @State private var showingComparison = false
     @State private var showingStatistics = false
+    /// Чи йде Live Activity для цього місця (NOL-39).
+    @State private var liveActivityRunning = false
+    @State private var liveActivityError: String?
 
     enum DayMode: Hashable { case earlier, today, tomorrow }
 
@@ -33,6 +36,12 @@ struct PlaceDetailView: View {
                     Menu {
                         Button { showingSettings = true } label: { Label("Налаштування місця", systemImage: "slider.horizontal.3") }
                         Button { showingStatistics = true } label: { Label("Статистика", systemImage: "chart.bar") }
+                        if let place {
+                            Button { Task { await toggleLiveActivity(place) } } label: {
+                                Label(liveActivityRunning ? "Зупинити відлік" : "Відлік на заблокованому екрані",
+                                      systemImage: liveActivityRunning ? "stop.circle" : "timer")
+                            }
+                        }
                         if place?.region == .cherkasy {
                             Button { showingComparison = true } label: {
                                 Label("Порівняння джерел", systemImage: "rectangle.split.2x1")
@@ -46,6 +55,13 @@ struct PlaceDetailView: View {
         .sheet(isPresented: $showingSettings) { PlaceSettingsView(placeID: placeID) }
         .sheet(isPresented: $showingComparison) { SourceComparisonView(placeID: placeID) }
         .sheet(isPresented: $showingStatistics) { StatisticsView(placeID: placeID) }
+        .task { liveActivityRunning = LiveActivityManager.isRunning(for: placeID) }
+        .alert("Не вдалося запустити відлік", isPresented: Binding(get: { liveActivityError != nil },
+                                                                  set: { if !$0 { liveActivityError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(liveActivityError ?? "")
+        }
     }
 
     private func content(place: Place) -> some View {
@@ -171,6 +187,21 @@ struct PlaceDetailView: View {
 }
 
 extension PlaceDetailView {
+    /// Запускає або зупиняє Live Activity (NOL-39). Після 8 год iOS завершує її — запуск знову через це ж меню.
+    fileprivate func toggleLiveActivity(_ place: Place) async {
+        if LiveActivityManager.isRunning(for: place.id) {
+            await LiveActivityManager.stop(placeID: place.id)
+            liveActivityRunning = false
+            return
+        }
+        guard LiveActivityManager.isAvailable else {
+            liveActivityError = "Увімкніть Live Activities для NoLight у Параметрах → NoLight."
+            return
+        }
+        liveActivityRunning = await LiveActivityManager.start(place: place, snapshot: state.snapshot(for: place))
+        if !liveActivityRunning { liveActivityError = "iOS не дозволила запустити відлік. Спробуйте ще раз пізніше." }
+    }
+
     fileprivate func dayTitle(mode: DayMode, date: Date) -> String {
         switch mode {
         case .today: return "Графік на сьогодні"
