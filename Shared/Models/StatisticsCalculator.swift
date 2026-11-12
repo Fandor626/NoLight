@@ -17,6 +17,9 @@ struct PowerMinutes: Equatable, Sendable {
 struct DayStatistics: Equatable, Sendable {
     let dateKey: String
     let minutes: PowerMinutes?
+    /// Розбивка на ніч і день (NOL-26); nil разом із `minutes`.
+    var night: PowerMinutes? = nil
+    var daytime: PowerMinutes? = nil
 
     var isKnown: Bool { minutes != nil }
 }
@@ -42,6 +45,8 @@ struct PlaceStatistics: Equatable, Sendable {
 
     /// Підсумок за попередні дні: лише дні з даними.
     var previousTotal: PowerMinutes { previous.compactMap(\.minutes).reduce(PowerMinutes(), +) }
+    var previousNightTotal: PowerMinutes { previous.compactMap(\.night).reduce(PowerMinutes(), +) }
+    var previousDayTotal: PowerMinutes { previous.compactMap(\.daytime).reduce(PowerMinutes(), +) }
     var knownPreviousDays: Int { previous.filter(\.isKnown).count }
     var unknownPreviousDays: Int { previous.count - knownPreviousDays }
 }
@@ -50,36 +55,53 @@ enum StatisticsCalculator {
     /// Хвилини доби за станами. Неопублікований/нерозпізнаний графік → nil («Невідомо»).
     /// Дні переходу на літній/зимовий час рахуються за реальною тривалістю (23 / 25 год).
     static func minutes(of day: DaySchedule, calendar: Calendar = KyivTime.calendar) -> PowerMinutes? {
+        minutes(of: day, within: [MinuteRange(start: 0, end: 1440)], calendar: calendar)
+    }
+
+    /// Те саме, але лише в межах `ranges` (напр., нічні проміжки).
+    static func minutes(of day: DaySchedule, within ranges: [MinuteRange],
+                        calendar: Calendar = KyivTime.calendar) -> PowerMinutes? {
         guard day.kind == .published else { return nil }
         let shift = dstShift(dateKey: day.dateKey, calendar: calendar)
         var result = PowerMinutes()
         for interval in day.intervals {
-            var length = interval.duration
-            if let shift {
-                let overlap = max(0, min(interval.end, shift.range.end) - max(interval.start, shift.range.start))
-                length += overlap * (shift.weight - 1)
-            }
-            switch interval.state {
-            case .available: result.available += length
-            case .outage: result.outage += length
-            case .unknown: result.unknown += length
+            for r in MinuteRange.normalized(ranges) {
+                let a = max(interval.start, r.start), b = min(interval.end, r.end)
+                guard a < b else { continue }
+                var length = b - a
+                if let shift {
+                    let overlap = max(0, min(b, shift.range.end) - max(a, shift.range.start))
+                    length += overlap * (shift.weight - 1)
+                }
+                switch interval.state {
+                case .available: result.available += length
+                case .outage: result.outage += length
+                case .unknown: result.unknown += length
+                }
             }
         }
         return result
     }
 
-    static func day(_ day: DaySchedule, calendar: Calendar = KyivTime.calendar) -> DayStatistics {
-        DayStatistics(dateKey: day.dateKey, minutes: minutes(of: day, calendar: calendar))
+    static func day(_ day: DaySchedule, night: NightBounds = .default,
+                    calendar: Calendar = KyivTime.calendar) -> DayStatistics {
+        let all = minutes(of: day, calendar: calendar)
+        guard all != nil else { return DayStatistics(dateKey: day.dateKey, minutes: nil) }
+        let bounds = night.isValid ? night : .default
+        return DayStatistics(dateKey: day.dateKey, minutes: all,
+                             night: minutes(of: day, within: bounds.ranges, calendar: calendar),
+                             daytime: minutes(of: day, within: bounds.dayRanges, calendar: calendar))
     }
 
     static func statistics(snapshot: ScheduleSnapshot?, subgroup: Subgroup, now: Date,
-                           period: StatisticsPeriod) -> PlaceStatistics {
+                           period: StatisticsPeriod, night: NightBounds = .default) -> PlaceStatistics {
         let p = SubgroupPresentation(snapshot: snapshot, subgroup: subgroup, now: now)
-        let tomorrow = day(p.tomorrow)
+        let tomorrow = day(p.tomorrow, night: night)
         let previous = HistoryWindow.previousKeys(today: p.todayKey, days: period.days).map {
-            day(HistoryWindow.pastSchedule(snapshot: snapshot, subgroup: subgroup, dateKey: $0))
+            day(HistoryWindow.pastSchedule(snapshot: snapshot, subgroup: subgroup, dateKey: $0), night: night)
         }
-        return PlaceStatistics(today: day(p.today), tomorrow: tomorrow.isKnown ? tomorrow : nil, previous: previous)
+        return PlaceStatistics(today: day(p.today, night: night), tomorrow: tomorrow.isKnown ? tomorrow : nil,
+                               previous: previous)
     }
 
     /// Хвилини «настінного годинника» доби, які не існують (weight 0, весна) або повторюються (weight 2, осінь).

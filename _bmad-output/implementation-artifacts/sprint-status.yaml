@@ -41,7 +41,7 @@ development_status:
 
   epic-4: in-progress  # NOL-4
   4-1-period-statistics: review  # NOL-25
-  4-2-night-day-split: backlog  # NOL-26
+  4-2-night-day-split: review  # NOL-26
   4-3-night-bounds-settings: backlog  # NOL-27
   epic-4-retrospective: optional
 

@@ -8,6 +8,8 @@ struct StatisticsView: View {
     @State private var period = StatisticsPeriod.seven
 
     private var place: Place? { state.places.first { $0.id == placeID } }
+    /// Межі ночі (NOL-26). Налаштування — NOL-27.
+    private var night: NightBounds { .default }
 
     var body: some View {
         NavigationStack {
@@ -28,12 +30,12 @@ struct StatisticsView: View {
 
     private func list(place: Place) -> some View {
         let stats = StatisticsCalculator.statistics(snapshot: state.snapshot(for: place), subgroup: place.subgroup,
-                                                    now: .now, period: period)
+                                                    now: .now, period: period, night: night)
         return List {
             Section {
-                StatisticsDayRow(title: "Сьогодні", day: stats.today)
+                StatisticsDayRow(title: "Сьогодні", day: stats.today, showsSplit: true)
                 if let tomorrow = stats.tomorrow {
-                    StatisticsDayRow(title: "Завтра", day: tomorrow)
+                    StatisticsDayRow(title: "Завтра", day: tomorrow, showsSplit: true)
                 }
             } header: {
                 Text("За графіком")
@@ -50,6 +52,10 @@ struct StatisticsView: View {
                 .listRowInsets(EdgeInsets())
 
                 StatisticsTotalsRow(total: stats.previousTotal, knownDays: stats.knownPreviousDays)
+                if stats.knownPreviousDays > 0 {
+                    StatisticsPartRow(title: "Ніч", subtitle: night.title, minutes: stats.previousNightTotal)
+                    StatisticsPartRow(title: "День", subtitle: nil, minutes: stats.previousDayTotal)
+                }
             } header: {
                 Text("Разом за \(period.title)")
             } footer: {
@@ -71,6 +77,8 @@ struct StatisticsView: View {
 struct StatisticsDayRow: View {
     let title: String
     let day: DayStatistics
+    /// Показувати під рядком «Ніч / День» (NOL-26).
+    var showsSplit = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
@@ -81,6 +89,11 @@ struct StatisticsDayRow: View {
                     StatisticsValues(minutes: m)
                     if m.unknown > 0 {
                         Text("Невідомо: " + StatisticsFormat.duration(m.unknown))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    if showsSplit, let n = day.night, let d = day.daytime {
+                        Text("Ніч без світла " + StatisticsFormat.duration(n.outage)
+                             + " · День без світла " + StatisticsFormat.duration(d.outage))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -131,5 +144,30 @@ struct StatisticsTotalsRow: View {
                 }
             }
         }
+    }
+}
+
+/// «Ніч 00:00–06:00 · 💡 4 год · ⛔ 2 год» у підсумку за період (NOL-26).
+struct StatisticsPartRow: View {
+    let title: String
+    let subtitle: String?
+    let minutes: PowerMinutes
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary).monospacedDigit() }
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                StatisticsValues(minutes: minutes)
+                if minutes.unknown > 0 {
+                    Text("Невідомо: " + StatisticsFormat.duration(minutes.unknown))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
