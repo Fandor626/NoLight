@@ -49,6 +49,8 @@ targets:
             CFBundleURLSchemes: [nolight]
         UILaunchScreen: {}
         UIBackgroundModes: [fetch]
+        # Відлік до зміни на заблокованому екрані (NOL-39).
+        NSSupportsLiveActivities: true
         BGTaskSchedulerPermittedIdentifiers:
           - $(PRODUCT_BUNDLE_IDENTIFIER).refresh
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]

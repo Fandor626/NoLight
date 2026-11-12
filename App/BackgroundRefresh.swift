@@ -35,5 +35,6 @@ enum BackgroundRefresh {
         // Після оновлення — сповіщення про зміни графіка (NOL-23) і перепланування попереджень (NOL-21).
         await ScheduleChangeNotifier.processFromStores()
         await NotificationScheduler.replanFromStores()
+        await LiveActivityManager.updateFromStores()
     }
 }

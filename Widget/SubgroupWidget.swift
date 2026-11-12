@@ -85,5 +85,6 @@ struct NoLightWidgetBundle: WidgetBundle {
     var body: some Widget {
         SubgroupScheduleWidget()
         PlacesListWidget()
+        PlaceLiveActivity()
     }
 }
