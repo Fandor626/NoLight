@@ -79,5 +79,5 @@ development_status:
 
   epic-10: in-progress  # NOL-45 (Apple Watch)
   10-1-watch-app-chosen-place: review  # NOL-46
-  10-2-watch-widget-timeline: backlog  # NOL-47
+  10-2-watch-widget-timeline: review  # NOL-47
   epic-10-retrospective: optional
