@@ -80,16 +80,19 @@ struct DaySchedule: Codable, Equatable, Sendable {
     let source: URL?
     let publishedAt: Date?
 
-    static func build(dateKey: String, subgroup: Subgroup, outages: [MinuteRange],
+    /// `unknown` — проміжки, для яких джерело дало незрозуміле значення (NOL-15): вони «невідомо», не «є світло».
+    /// Відключення має пріоритет над «невідомо».
+    static func build(dateKey: String, subgroup: Subgroup, outages: [MinuteRange], unknown: [MinuteRange] = [],
                       source: URL?, publishedAt: Date?) -> DaySchedule {
+        var state = [PowerState](repeating: .available, count: 1440)
+        for r in MinuteRange.normalized(unknown) { for m in r.start..<r.end { state[m] = .unknown } }
+        for r in MinuteRange.normalized(outages) { for m in r.start..<r.end { state[m] = .outage } }
         var intervals: [ScheduleInterval] = []
-        var cursor = 0
-        for r in MinuteRange.normalized(outages) {
-            if r.start > cursor { intervals.append(.init(start: cursor, end: r.start, state: .available)) }
-            intervals.append(.init(start: r.start, end: r.end, state: .outage))
-            cursor = r.end
+        var start = 0
+        for m in 1...1440 where m == 1440 || state[m] != state[start] {
+            intervals.append(.init(start: start, end: m, state: state[start]))
+            start = m
         }
-        if cursor < 1440 { intervals.append(.init(start: cursor, end: 1440, state: .available)) }
         return DaySchedule(dateKey: dateKey, subgroup: subgroup, kind: .published,
                            intervals: intervals, source: source, publishedAt: publishedAt)
     }
@@ -116,6 +119,8 @@ struct PublishedSchedulePost: Codable, Equatable, Sendable {
     let outages: [String: [MinuteRange]]
     /// Частини інтервалів, що переходять через північ (для НАСТУПНОЇ доби).
     let spillover: [String: [MinuteRange]]
+    /// Проміжки з незрозумілим значенням у джерелі (лише API, NOL-15). nil у старому кеші.
+    var unknown: [String: [MinuteRange]]? = nil
 }
 
 /// Усе, що застосунок знає про графіки; зберігається в кеші й читається віджетами.
@@ -150,6 +155,7 @@ struct ScheduleSnapshot: Codable, Equatable, Sendable {
             return .unknown(dateKey: dateKey, subgroup: subgroup, kind: .subgroupNotListed)
         }
         return .build(dateKey: dateKey, subgroup: subgroup, outages: (own ?? []) + carry,
+                      unknown: post.unknown?[subgroup.id] ?? [],
                       source: post.sourceURL, publishedAt: post.publishedAt)
     }
 }

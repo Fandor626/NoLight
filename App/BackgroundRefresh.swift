@@ -19,12 +19,19 @@ enum BackgroundRefresh {
 
     /// Фонове завдання iOS (NOL-20). Одне оновлення джерела оновлює графіки всіх місць (дані спільні для всіх підчерг);
     /// після успіху віджети перезавантажуються (`onUpdate`). Помилка не змінює кеш — її записує `ScheduleRepository`.
-    /// Після Epic 2 тут оновлюватимуться всі джерела, що використовують місця; після NOL-21 — переплануватимуться сповіщення.
+    /// Після NOL-21 тут переплануватимуться сповіщення.
     static func perform(settings: RefreshSettingsStore = .shared) async {
         defer { schedule(settings: settings) }
         // Запит міг лишитися з автоматичного режиму: у ручному нічого не оновлюємо.
         guard settings.allowsBackgroundRefresh else { return }
-        let repository = ScheduleRepository.live(onUpdate: { WidgetCenter.shared.reloadAllTimelines() })
-        _ = try? await repository.refresh()
+        // Усі джерела й області, що використовують місця (NOL-15); помилка одного не зупиняє інші.
+        await withTaskGroup(of: Void.self) { group in
+            for key in ScheduleSourceKey.active(for: PlaceStore.shared.places) {
+                group.addTask {
+                    _ = try? await ScheduleRepository.live(for: key, onUpdate: { WidgetCenter.shared.reloadAllTimelines() })
+                        .refresh()
+                }
+            }
+        }
     }
 }

@@ -123,9 +123,19 @@ final class PlaceDraftTests: XCTestCase {
         XCTAssertFalse(draft.isValid)
     }
 
-    func testOnlyCherkasyIsSelectableForNow() {
-        XCTAssertEqual(Region.selectable, [.cherkasy])
-        XCTAssertTrue(Region.cherkasy.hasScheduleData)
+    // NOL-15: усі області з API; Черкаська першою, решта за абеткою.
+    func testAllApiRegionsAreSelectable() {
+        XCTAssertEqual(Region.selectable.count, 12)
+        XCTAssertEqual(Region.selectable.first, .cherkasy)
+        XCTAssertEqual(Set(Region.selectable), Set(Region.allCases))
+        XCTAssertTrue(Region.allCases.allSatisfy { $0.hasScheduleData })
+    }
+
+    func testDefaultSourceIsSiteForCherkasyAndApiElsewhere() {
+        var d = PlaceDraft(); d.name = "Батьки"; d.region = .lviv
+        XCTAssertEqual(d.makePlace()?.source, .outageDataAPI)
+        d.region = .cherkasy
+        XCTAssertEqual(d.makePlace()?.source, .oblenergoSite)
     }
 
     func testSameSubgroupCanBeUsedByTwoPlaces() {

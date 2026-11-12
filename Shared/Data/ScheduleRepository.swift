@@ -2,13 +2,13 @@ import Foundation
 
 /// Єдина точка доступу до даних для застосунку й віджетів: мережа + кеш.
 actor ScheduleRepository {
-    private let service: ScheduleService
+    private let service: any ScheduleSourcing
     private let cache: ScheduleCaching
     private let now: @Sendable () -> Date
     private let onUpdate: (@Sendable () -> Void)?
     private let status: RefreshStatusStore?
 
-    init(service: ScheduleService, cache: ScheduleCaching,
+    init(service: any ScheduleSourcing, cache: ScheduleCaching,
          now: @escaping @Sendable () -> Date = { Date() },
          status: RefreshStatusStore? = nil,
          onUpdate: (@Sendable () -> Void)? = nil) {
@@ -52,16 +52,27 @@ actor ScheduleRepository {
 }
 
 extension ScheduleRepository {
+    /// Сайт Черкасиобленерго (як у v1). Віджети й застосунок для черкаських місць із джерелом «сайт».
     static func live(onUpdate: (@Sendable () -> Void)? = nil) -> ScheduleRepository {
+        live(for: .cherkasySite, onUpdate: onUpdate)
+    }
+
+    /// Репозиторій для конкретного джерела й області: окремий кеш і окремий статус помилки.
+    static func live(for key: ScheduleSourceKey, onUpdate: (@Sendable () -> Void)? = nil) -> ScheduleRepository {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20
         config.timeoutIntervalForResource = 40
         config.waitsForConnectivity = false
-        let session = URLSession(configuration: config)
-        let service = ScheduleService(fetcher: URLSessionHTMLFetcher(session: session),
-                                      newsListURL: AppConfig.newsListURL)
-        return ScheduleRepository(service: service, cache: FileScheduleCache.appGroup(),
-                                  status: .shared, onUpdate: onUpdate)
+        let fetcher = URLSessionHTMLFetcher(session: URLSession(configuration: config))
+        let service: any ScheduleSourcing
+        switch key.source {
+        case .oblenergoSite:
+            service = ScheduleService(fetcher: fetcher, newsListURL: AppConfig.newsListURL)
+        case .outageDataAPI:
+            service = OutageDataService(fetcher: fetcher, region: key.region)
+        }
+        return ScheduleRepository(service: service, cache: FileScheduleCache.appGroup(for: key),
+                                  status: RefreshStatusStore.shared(for: key), onUpdate: onUpdate)
     }
 }
 

@@ -15,7 +15,7 @@ struct SubgroupEntry: TimelineEntry {
     var isPlaceholder = false
 
     static func make(date: Date, snapshot: ScheduleSnapshot?, resolution: WidgetPlaceResolution,
-                     failure: RefreshFailure? = RefreshStatusStore.shared.lastFailure) -> SubgroupEntry {
+                     failure: RefreshFailure?) -> SubgroupEntry {
         // Для видаленого місця підчерга не важлива: показується лише повідомлення.
         let subgroup = resolution.subgroup ?? Subgroup(queue: 1, sub: 1)!
         return SubgroupEntry(date: date,
@@ -38,16 +38,18 @@ struct SubgroupProvider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: SelectSubgroupIntent, in context: TimelineProviderContext) async -> SubgroupEntry {
-        let snapshot = await ScheduleRepository.live().cachedSnapshot()
-        return .make(date: .now, snapshot: snapshot, resolution: configuration.resolution)
+        let resolution = configuration.resolution
+        let snapshot = await ScheduleRepository.live(for: resolution.sourceKey).cachedSnapshot()
+        return .make(date: .now, snapshot: snapshot, resolution: resolution,
+                     failure: RefreshStatusStore.shared(for: resolution.sourceKey).lastFailure)
     }
 
     func timeline(for configuration: SelectSubgroupIntent, in context: TimelineProviderContext) async -> Timeline<SubgroupEntry> {
         // Віджет сам пробує оновити дані; при невдачі використовується кеш.
-        let snapshot = await ScheduleRepository.live().refreshIfNeeded(maxAge: 15 * 60)
-        let now = Date()
         let resolution = configuration.resolution
-        let failure = RefreshStatusStore.shared.lastFailure
+        let snapshot = await ScheduleRepository.live(for: resolution.sourceKey).refreshIfNeeded(maxAge: 15 * 60)
+        let now = Date()
+        let failure = RefreshStatusStore.shared(for: resolution.sourceKey).lastFailure
         guard let sg = resolution.subgroup else {
             return Timeline(entries: [.make(date: now, snapshot: snapshot, resolution: resolution, failure: failure)],
                             policy: .never)

@@ -29,7 +29,7 @@ struct PlaceDetailView: View {
     private func content(place: Place) -> some View {
         let subgroup = place.subgroup
         return TimelineView(.periodic(from: .now, by: 30)) { context in
-            let p = SubgroupPresentation(snapshot: state.snapshot, subgroup: subgroup, now: context.date)
+            let p = SubgroupPresentation(snapshot: state.snapshot(for: place), subgroup: subgroup, now: context.date)
             let pastKeys = HistoryWindow.previousKeys(today: p.todayKey)
             let selectedPast = pastKey.flatMap { pastKeys.contains($0) ? $0 : nil } ?? pastKeys[0]
             let day: DaySchedule = {
@@ -37,7 +37,7 @@ struct PlaceDetailView: View {
                 case .today: return p.today
                 case .tomorrow: return p.tomorrow
                 case .earlier:
-                    return HistoryWindow.pastSchedule(snapshot: state.snapshot, subgroup: subgroup, dateKey: selectedPast)
+                    return HistoryWindow.pastSchedule(snapshot: state.snapshot(for: place), subgroup: subgroup, dateKey: selectedPast)
                 }
             }()
             let dayDate = KyivTime.startOfDay(dateKey: day.dateKey) ?? context.date
@@ -113,9 +113,10 @@ struct PlaceDetailView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         if let updated = p.updatedText { Text(updated) }
                         if let published = day.publishedAt {
-                            Text("Допис на сайті: " + KyivTime.shortDateTimeString(published))
+                            Text((place.sourceKey.source == .oblenergoSite ? "Допис на сайті: " : "Оновлено в API: ")
+                                 + KyivTime.shortDateTimeString(published))
                         }
-                        Text("Джерело: АТ «Черкасиобленерго»")
+                        Text("Джерело: " + place.sourceKey.source.title)
                     }
                     .font(.footnote).foregroundStyle(.secondary)
                 }
