@@ -13,6 +13,11 @@ struct NightBounds: Codable, Equatable, Sendable {
         (0..<1440).contains(startMinute) && (0..<1440).contains(endMinute) && startMinute != endMinute
     }
 
+    /// Помилка валідації для налаштувань (NOL-27); nil — межі коректні.
+    var validationMessage: String? {
+        isValid ? nil : "Початок і кінець ночі не можуть збігатися."
+    }
+
     var crossesMidnight: Bool { startMinute > endMinute }
 
     /// Нічні проміжки в межах однієї календарної доби: один або два (якщо ніч переходить через північ).
@@ -37,4 +42,13 @@ struct NightBounds: Codable, Equatable, Sendable {
 
     /// «00:00–06:00».
     var title: String { KyivTime.minuteString(startMinute) + "–" + KyivTime.minuteString(endMinute) }
+}
+
+/// Перетворення між хвилиною доби й `Date` для DatePicker (за київським часом).
+enum NightTime {
+    static func date(minute: Int, now: Date = .now) -> Date {
+        KyivTime.date(dateKey: KyivTime.dateKey(for: now), minute: minute) ?? now
+    }
+
+    static func minute(of date: Date) -> Int { KyivTime.minutes(of: date) }
 }
