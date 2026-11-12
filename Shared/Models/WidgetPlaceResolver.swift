@@ -17,6 +17,12 @@ enum WidgetPlaceResolution: Equatable, Sendable {
         }
     }
 
+    /// Звідки брати графік (віджети v1 і видалене місце — сайт Черкас, як у v1).
+    var sourceKey: ScheduleSourceKey {
+        if case .place(let place) = self { return place.sourceKey }
+        return .cherkasySite
+    }
+
     /// Заголовок картки віджета.
     var title: String {
         switch self {

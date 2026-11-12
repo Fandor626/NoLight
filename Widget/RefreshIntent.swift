@@ -10,7 +10,10 @@ struct RefreshScheduleIntent: AppIntent {
     static var isDiscoverable: Bool = false
 
     func perform() async throws -> some IntentResult {
-        _ = try? await ScheduleRepository.live().refresh()
+        // Усі джерела, що використовують місця (сайт і/або API різних областей).
+        for key in ScheduleSourceKey.active(for: PlaceStore.shared.places) {
+            _ = try? await ScheduleRepository.live(for: key).refresh()
+        }
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }

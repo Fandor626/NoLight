@@ -6,20 +6,25 @@ struct PlacesListEntry: TimelineEntry {
     struct Item: Identifiable {
         let place: Place
         let presentation: SubgroupPresentation
+        let refreshFailed: Bool
         var id: UUID { place.id }
     }
 
     let date: Date
     /// Усі місця в порядку застосунку; скільки показати, вирішує розмір віджета.
     let places: [Place]
-    let snapshot: ScheduleSnapshot?
-    var refreshFailed = false
+    /// Дані кожного джерела й області (NOL-15).
+    let snapshots: [ScheduleSourceKey: ScheduleSnapshot]
+    /// Джерела, останнє оновлення яких не вдалося (після останнього успішного).
+    var failedKeys: Set<ScheduleSourceKey> = []
     var isPlaceholder = false
 
     func items(capacity: Int) -> (shown: [Item], overflow: Int) {
         let visible = PlacesListLayout.visible(places, capacity: capacity)
         let items = visible.shown.map {
-            Item(place: $0, presentation: SubgroupPresentation(snapshot: snapshot, subgroup: $0.subgroup, now: date))
+            Item(place: $0,
+                 presentation: SubgroupPresentation(snapshot: snapshots[$0.sourceKey], subgroup: $0.subgroup, now: date),
+                 refreshFailed: failedKeys.contains($0.sourceKey))
         }
         return (items, visible.overflow)
     }
@@ -29,34 +34,50 @@ struct PlacesListProvider: TimelineProvider {
     func placeholder(in context: Context) -> PlacesListEntry {
         let sample = [Place(name: "Дім", subgroup: Subgroup(queue: 1, sub: 1)!),
                       Place(name: "Робота", subgroup: Subgroup(queue: 2, sub: 1)!)]
-        return PlacesListEntry(date: .now, places: sample, snapshot: nil, isPlaceholder: true)
+        return PlacesListEntry(date: .now, places: sample, snapshots: [:], isPlaceholder: true)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (PlacesListEntry) -> Void) {
         Task {
-            let snapshot = await ScheduleRepository.live().cachedSnapshot()
-            completion(entry(date: .now, snapshot: snapshot))
+            let data = await load(refresh: false)
+            completion(entry(date: .now, data: data))
         }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<PlacesListEntry>) -> Void) {
         Task {
-            let snapshot = await ScheduleRepository.live().refreshIfNeeded(maxAge: 15 * 60)
+            let data = await load(refresh: true)
             let now = Date()
             let shown = PlacesListLayout.visible(PlaceStore.shared.places, capacity: PlacesListLayout.largeCapacity).shown
             var dates = Set<Date>([now])
             for place in shown {
-                dates.formUnion(WidgetTimelinePlanner.entryDates(now: now, snapshot: snapshot, subgroup: place.subgroup))
+                dates.formUnion(WidgetTimelinePlanner.entryDates(now: now, snapshot: data[place.sourceKey],
+                                                                 subgroup: place.subgroup))
             }
-            let entries = dates.sorted().map { entry(date: $0, snapshot: snapshot) }
+            let entries = dates.sorted().map { entry(date: $0, data: data) }
             completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(30 * 60))))
         }
     }
 
-    private func entry(date: Date, snapshot: ScheduleSnapshot?) -> PlacesListEntry {
-        let failure = RefreshStatusStore.shared.lastFailure
-        return PlacesListEntry(date: date, places: PlaceStore.shared.places, snapshot: snapshot,
-                               refreshFailed: failure?.isNewer(than: snapshot?.fetchedAt) ?? false)
+    /// Кеш (або оновлення, якщо кеш старіший за 15 хв) для кожного джерела, яке використовують місця.
+    private func load(refresh: Bool) async -> [ScheduleSourceKey: ScheduleSnapshot] {
+        var out: [ScheduleSourceKey: ScheduleSnapshot] = [:]
+        for key in ScheduleSourceKey.active(for: PlaceStore.shared.places) {
+            let repo = ScheduleRepository.live(for: key)
+            if refresh {
+                out[key] = await repo.refreshIfNeeded(maxAge: 15 * 60)
+            } else {
+                out[key] = await repo.cachedSnapshot()
+            }
+        }
+        return out
+    }
+
+    private func entry(date: Date, data: [ScheduleSourceKey: ScheduleSnapshot]) -> PlacesListEntry {
+        let failed = Set(ScheduleSourceKey.active(for: PlaceStore.shared.places).filter { key in
+            RefreshStatusStore.shared(for: key).lastFailure?.isNewer(than: data[key]?.fetchedAt) ?? false
+        })
+        return PlacesListEntry(date: date, places: PlaceStore.shared.places, snapshots: data, failedKeys: failed)
     }
 }
 
@@ -85,7 +106,7 @@ struct PlacesListWidgetView: View {
                     ForEach(items) { item in
                         Link(destination: DeepLink.place(item.id)) {
                             PlaceCardContent(name: item.place.name, presentation: item.presentation,
-                                             style: .listRow, refreshFailed: entry.refreshFailed)
+                                             style: .listRow, refreshFailed: item.refreshFailed)
                         }
                     }
                     Spacer(minLength: 0)

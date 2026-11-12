@@ -24,7 +24,7 @@ struct HomeView: View {
                                     NavigationLink(value: place) {
                                         PlaceCardView(
                                             name: place.name,
-                                            presentation: SubgroupPresentation(snapshot: state.snapshot,
+                                            presentation: SubgroupPresentation(snapshot: state.snapshot(for: place),
                                                                                subgroup: place.subgroup, now: context.date))
                                     }
                                     .buttonStyle(.plain)
