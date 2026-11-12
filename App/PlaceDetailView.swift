@@ -7,6 +7,7 @@ struct PlaceDetailView: View {
     @State private var mode = DayMode.today
     /// Вибраний минулий день (dateKey); nil — учора.
     @State private var pastKey: String?
+    @State private var showingSettings = false
 
     enum DayMode: Hashable { case earlier, today, tomorrow }
 
@@ -24,6 +25,15 @@ struct PlaceDetailView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle(place?.name ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if place != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showingSettings = true } label: { Image(systemName: "slider.horizontal.3") }
+                        .accessibilityLabel("Налаштування місця")
+                }
+            }
+        }
+        .sheet(isPresented: $showingSettings) { PlaceSettingsView(placeID: placeID) }
     }
 
     private func content(place: Place) -> some View {
