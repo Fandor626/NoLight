@@ -2,7 +2,7 @@ import Foundation
 
 /// Заплановане локальне сповіщення (без залежності від UserNotifications — чиста логіка, тестується).
 struct PlannedNotification: Equatable, Sendable {
-    enum Kind: String, Sendable { case outage }
+    enum Kind: String, Sendable { case outage, powerReturn }
 
     let id: String
     let placeID: UUID
@@ -15,7 +15,7 @@ struct PlannedNotification: Equatable, Sendable {
     let body: String
 }
 
-/// Планує попередження перед відключеннями за кешованими графіками (NOL-21).
+/// Планує попередження перед відключеннями (NOL-21) і перед поверненням світла (NOL-22) за кешованими графіками.
 /// iOS тримає не більше 64 очікуваних локальних сповіщень, тому плануємо лише найближчі
 /// й переплановуємо після кожного оновлення, відкриття застосунку та зміни місць.
 enum NotificationPlanner {
@@ -26,20 +26,34 @@ enum NotificationPlanner {
                      limit: Int = iOSLimit) -> [PlannedNotification] {
         var out: [PlannedNotification] = []
         for place in places {
-            guard let lead = place.warnBeforeOutageMinutes else { continue }
+            guard place.warnBeforeOutageMinutes != nil || place.warnBeforeReturnMinutes != nil else { continue }
             let p = SubgroupPresentation(snapshot: snapshot(place), subgroup: place.subgroup, now: now)
             // Протерміновані/відсутні дані вже перетворені на «невідомо» — для них нічого не плануємо.
             let intervals = StatusCalculator.absoluteIntervals(today: p.today, tomorrow: p.tomorrow)
-            for (index, interval) in intervals.enumerated() where interval.state == .outage {
+            for (index, interval) in intervals.enumerated() {
                 let previous = index > 0 ? intervals[index - 1].state : nil
-                guard previous != .outage else { continue }
-                let fire = interval.start.addingTimeInterval(-TimeInterval(lead * 60))
-                guard fire > now else { continue }
-                out.append(PlannedNotification(
-                    id: id(place: place, kind: .outage, event: interval.start),
-                    placeID: place.id, kind: .outage, fireDate: fire, eventDate: interval.start,
-                    title: "«\(place.name)»: відключення о \(KyivTime.timeString(interval.start))",
-                    body: "Через \(lead) хв за графіком не буде світла (підчерга \(place.subgroup.id))."))
+                // Початок відключення.
+                if interval.state == .outage, previous != .outage, let lead = place.warnBeforeOutageMinutes {
+                    let fire = interval.start.addingTimeInterval(-TimeInterval(lead * 60))
+                    if fire > now {
+                        out.append(PlannedNotification(
+                            id: id(place: place, kind: .outage, event: interval.start),
+                            placeID: place.id, kind: .outage, fireDate: fire, eventDate: interval.start,
+                            title: "«\(place.name)»: відключення о \(KyivTime.timeString(interval.start))",
+                            body: "Через \(lead) хв за графіком не буде світла (підчерга \(place.subgroup.id))."))
+                    }
+                }
+                // Повернення світла: відключення переходить у «є світло» (не в «невідомо»).
+                if interval.state == .available, previous == .outage, let lead = place.warnBeforeReturnMinutes {
+                    let fire = interval.start.addingTimeInterval(-TimeInterval(lead * 60))
+                    if fire > now {
+                        out.append(PlannedNotification(
+                            id: id(place: place, kind: .powerReturn, event: interval.start),
+                            placeID: place.id, kind: .powerReturn, fireDate: fire, eventDate: interval.start,
+                            title: "«\(place.name)»: світло о \(KyivTime.timeString(interval.start))",
+                            body: "Через \(lead) хв за графіком повернеться світло (підчерга \(place.subgroup.id))."))
+                    }
+                }
             }
         }
         return Array(out.sorted { ($0.fireDate, $0.id) < ($1.fireDate, $1.id) }.prefix(max(limit, 0)))

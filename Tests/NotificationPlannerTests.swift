@@ -66,9 +66,47 @@ final class NotificationPlannerTests: XCTestCase {
         XCTAssertEqual(d.add.map(\.id), Array(plan.dropFirst()).map(\.id))
     }
 
+    // NOL-22
+    func testPowerReturnWarningsUseTheirOwnLeadTime() {
+        var p = place(nil)
+        p.warnBeforeReturnMinutes = 30
+        let s = snapshot()
+        let plan = NotificationPlanner.plan(places: [p], snapshot: { _ in s }, now: Fixtures.kyiv(2026, 11, 10, 8, 0))
+        XCTAssertEqual(plan.map(\.kind), [.powerReturn, .powerReturn, .powerReturn])
+        XCTAssertEqual(plan.map(\.fireDate), [Fixtures.kyiv(2026, 11, 10, 11, 30),
+                                              Fixtures.kyiv(2026, 11, 10, 19, 30),
+                                              Fixtures.kyiv(2026, 11, 11, 2, 30)])
+        XCTAssertEqual(plan.first?.title, "«Робота»: світло о 12:00")
+    }
+
+    func testBothKindsShareTheLimitAndAreSorted() {
+        var p = place(15)
+        p.warnBeforeReturnMinutes = 10
+        let s = snapshot()
+        let plan = NotificationPlanner.plan(places: [p], snapshot: { _ in s }, now: Fixtures.kyiv(2026, 11, 10, 8, 0), limit: 4)
+        XCTAssertEqual(plan.map(\.kind), [.outage, .powerReturn, .outage, .powerReturn])
+        XCTAssertEqual(plan.map(\.fireDate), plan.map(\.fireDate).sorted())
+    }
+
+    func testNoPowerReturnWhenTurnedOff() {
+        let s = snapshot()
+        let plan = NotificationPlanner.plan(places: [place(15)], snapshot: { _ in s }, now: Fixtures.kyiv(2026, 11, 10, 8, 0))
+        XCTAssertFalse(plan.contains { $0.kind == .powerReturn })
+    }
+
+    func testOutageEndingInUnknownIsNotAPowerReturn() {
+        var p = place(nil)
+        p.warnBeforeReturnMinutes = 15
+        // Відключення до 24:00, а завтра графіка немає → після відключення «невідомо», не «світло».
+        let s = Fixtures.snapshot(posts: [day: ["1.1": [Fixtures.r(1320, 1440)]]], fetchedAt: fetched)
+        let plan = NotificationPlanner.plan(places: [p], snapshot: { _ in s }, now: Fixtures.kyiv(2026, 11, 10, 8, 0))
+        XCTAssertTrue(plan.isEmpty)
+    }
+
     func testOldStoredPlaceWithoutWarningFieldDecodes() throws {
         let json = #"{"id":"\#(UUID().uuidString)","name":"Дім","region":"cherkasy","subgroup":"3.2","source":"oblenergoSite"}"#
         let p = try JSONDecoder().decode(Place.self, from: Data(json.utf8))
         XCTAssertNil(p.warnBeforeOutageMinutes)
+        XCTAssertNil(p.warnBeforeReturnMinutes)
     }
 }

@@ -43,10 +43,20 @@ struct PlaceSettingsView: View {
                                 ForEach(Place.warningLeadOptions, id: \.self) { Text("\($0) хв").tag($0) }
                             }
                         }
+                        Toggle("Перед поверненням світла", isOn: Binding(
+                            get: { place.warnBeforeReturnMinutes != nil },
+                            set: { state.setWarningBeforeReturn($0 ? Place.defaultWarningLead : nil, for: place) }))
+                        if let lead = place.warnBeforeReturnMinutes {
+                            Picker("За скільки", selection: Binding(
+                                get: { lead },
+                                set: { state.setWarningBeforeReturn($0, for: place) })) {
+                                ForEach(Place.warningLeadOptions, id: \.self) { Text("\($0) хв").tag($0) }
+                            }
+                        }
                     } header: {
                         Text("Попередження")
                     } footer: {
-                        Text("Локальне сповіщення за графіком — наприклад, щоб вчасно запустити генератор. Плануються найближчі відключення; список оновлюється після кожного оновлення графіка.")
+                        Text("Локальні сповіщення за графіком — щоб вчасно запустити або вимкнути генератор. Час налаштовується окремо. Плануються найближчі відключення; список оновлюється після кожного оновлення графіка.")
                     }
                 } else {
                     ContentUnavailableView("Місце видалено", systemImage: "mappin.slash")

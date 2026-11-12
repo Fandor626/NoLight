@@ -24,17 +24,17 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: in-progress  # NOL-2
-  2-1-any-region-from-api: review  # NOL-15
-  2-2-trust-and-freshness-labels: review  # NOL-16
-  2-3-source-choice-for-cherkasy: review  # NOL-17
-  2-4-source-comparison-screen: review  # NOL-18
+  2-1-any-region-from-api: ready-for-testing  # NOL-15
+  2-2-trust-and-freshness-labels: ready-for-testing  # NOL-16
+  2-3-source-choice-for-cherkasy: ready-for-testing  # NOL-17
+  2-4-source-comparison-screen: ready-for-testing  # NOL-18
   epic-2-retrospective: optional
 
   epic-3: in-progress  # NOL-3
   3-1-refresh-mode: ready-for-testing  # NOL-19
   3-2-background-refresh: ready-for-testing  # NOL-20
   3-3-warning-before-outage: review  # NOL-21
-  3-4-warning-before-power-returns: backlog  # NOL-22
+  3-4-warning-before-power-returns: review  # NOL-22
   3-5-schedule-change-notification: backlog  # NOL-23
   3-6-schedule-change-history: backlog  # NOL-24
   epic-3-retrospective: optional

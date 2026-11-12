@@ -173,6 +173,20 @@ final class AppState {
         await NotificationScheduler.replan(places: places, snapshot: { snaps[$0.sourceKey] })
     }
 
+    /// Вмикає (хвилини) або вимикає (nil) попередження перед поверненням світла (NOL-22).
+    func setWarningBeforeReturn(_ minutes: Int?, for place: Place) {
+        guard let index = places.firstIndex(where: { $0.id == place.id }) else { return }
+        places[index].warnBeforeReturnMinutes = minutes
+        if minutes != nil {
+            Task {
+                await NotificationScheduler.requestAuthorization()
+                save()
+            }
+        } else {
+            save()
+        }
+    }
+
     /// Вмикає (хвилини) або вимикає (nil) попередження перед відключенням для місця.
     func setWarningBeforeOutage(_ minutes: Int?, for place: Place) {
         guard let index = places.firstIndex(where: { $0.id == place.id }) else { return }
