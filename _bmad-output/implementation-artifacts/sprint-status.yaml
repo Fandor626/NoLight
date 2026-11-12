@@ -51,9 +51,9 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress  # NOL-6
-  6-1-place-in-widget: review  # NOL-30
-  6-2-widget-states: review  # NOL-31
-  6-3-widgets-mirror-place-cards: review  # NOL-40
+  6-1-place-in-widget: ready-for-testing  # NOL-30
+  6-2-widget-states: ready-for-testing  # NOL-31
+  6-3-widgets-mirror-place-cards: ready-for-testing  # NOL-40
   epic-6-retrospective: optional
 
   epic-7: backlog  # NOL-7
@@ -67,6 +67,7 @@ development_status:
   8-2-launch-screen-and-widget-icon: backlog  # NOL-36
   8-3-version-only-on-code-change: ready-for-testing  # NOL-37
   8-4-rename-to-nolight: ready-for-testing  # NOL-38
+  8-5-version-overwritten-by-info-plist: review  # NOL-41 (bug)
   epic-8-retrospective: optional
 
   epic-9: backlog  # NOL-9
