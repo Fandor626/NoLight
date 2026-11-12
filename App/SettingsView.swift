@@ -12,6 +12,8 @@ enum AppVersion {
 
 struct SettingsView: View {
     @Environment(AppState.self) private var state
+    @State private var refreshMode = RefreshSettingsStore.shared.mode
+    @State private var refreshInterval = RefreshSettingsStore.shared.interval
 
     var body: some View {
         NavigationStack {
@@ -40,9 +42,22 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Автоматичне оновлення") {
-                    Text("Графік оновлюється при відкритті застосунку, у фоні (коли це дозволяє iOS) і самими віджетами. Точний час фонового оновлення система не гарантує, тому віджет може відставати. Якщо дані давно не оновлювались, застосунок і віджет попереджають про це.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                Section {
+                    Picker("Режим", selection: $refreshMode) {
+                        ForEach(RefreshMode.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    if refreshMode == .automatic {
+                        Picker("Інтервал", selection: $refreshInterval) {
+                            ForEach(RefreshInterval.allCases, id: \.self) { Text($0.title).tag($0) }
+                        }
+                    }
+                } header: {
+                    Text("Оновлення")
+                } footer: {
+                    Text(refreshMode == .automatic
+                         ? "Графік оновлюється при відкритті застосунку, у фоні (коли це дозволяє iOS) і самими віджетами. Точний час фонового оновлення система не гарантує, тому віджет може відставати. Якщо дані давно не оновлювались, застосунок і віджет попереджають про це."
+                         : "Фонове оновлення вимкнено. Графік оновлюється при відкритті застосунку, кнопкою «Оновити» та самими віджетами.")
                 }
 
                 Section("Джерело даних") {
@@ -58,6 +73,14 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Налаштування")
+            .onChange(of: refreshMode) { _, mode in
+                RefreshSettingsStore.shared.mode = mode
+                BackgroundRefresh.schedule()
+            }
+            .onChange(of: refreshInterval) { _, interval in
+                RefreshSettingsStore.shared.interval = interval
+                BackgroundRefresh.schedule()
+            }
         }
     }
 }

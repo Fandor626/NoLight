@@ -30,8 +30,8 @@ development_status:
   2-4-source-comparison-screen: backlog  # NOL-18
   epic-2-retrospective: optional
 
-  epic-3: backlog  # NOL-3
-  3-1-refresh-mode: backlog  # NOL-19
+  epic-3: in-progress  # NOL-3
+  3-1-refresh-mode: review  # NOL-19
   3-2-background-refresh: backlog  # NOL-20
   3-3-warning-before-outage: backlog  # NOL-21
   3-4-warning-before-power-returns: backlog  # NOL-22
