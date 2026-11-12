@@ -7,6 +7,9 @@ struct PlaceSettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     private var place: Place? { state.places.first { $0.id == placeID } }
+    /// «Завжди на екрані» (NOL-43).
+    @State private var keepsCountdown = false
+    @State private var countdownError: String?
 
     var body: some View {
         NavigationStack {
@@ -61,6 +64,19 @@ struct PlaceSettingsView: View {
                     } footer: {
                         Text("Локальні сповіщення за графіком — щоб вчасно запустити або вимкнути генератор. Час налаштовується окремо. Сповіщення про зміну графіка залежить від фонового оновлення iOS, тому може прийти із запізненням або лише після відкриття застосунку. Плануються найближчі відключення; список оновлюється після кожного оновлення графіка.")
                     }
+                    Section {
+                        Toggle("Відлік завжди на екрані", isOn: Binding(
+                            get: { keepsCountdown },
+                            set: { on in Task { await setCountdown(on, place: place) } }))
+                        if let countdownError {
+                            Label(countdownError, systemImage: "exclamationmark.triangle.fill")
+                                .font(.footnote).foregroundStyle(.red)
+                        }
+                    } header: {
+                        Text("Заблокований екран")
+                    } footer: {
+                        Text("Відлік до наступної зміни прибирається лише тут або в меню «…». Якщо його випадково змахнути або iOS завершить його через 8 год, NoLight поверне його, щойно ви відкриєте застосунок.")
+                    }
                 } else {
                     ContentUnavailableView("Місце видалено", systemImage: "mappin.slash")
                 }
@@ -68,7 +84,24 @@ struct PlaceSettingsView: View {
             .navigationTitle(place?.name ?? "Місце")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { dismiss() } } }
+            .task { keepsCountdown = LiveActivityManager.isKept(placeID) }
         }
+    }
+
+    private func setCountdown(_ on: Bool, place: Place) async {
+        countdownError = nil
+        guard on else {
+            await LiveActivityManager.stop(placeID: place.id)
+            keepsCountdown = false
+            return
+        }
+        guard LiveActivityManager.isAvailable else {
+            countdownError = "Live Activities вимкнено: Параметри → NoLight → Live Activities."
+            keepsCountdown = false
+            return
+        }
+        keepsCountdown = await LiveActivityManager.start(place: place, snapshot: state.snapshot(for: place))
+        if !keepsCountdown { countdownError = "iOS не дозволила запустити відлік. Спробуйте ще раз пізніше." }
     }
 
     private func footer(for place: Place) -> String {

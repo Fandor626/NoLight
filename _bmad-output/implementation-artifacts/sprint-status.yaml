@@ -74,7 +74,7 @@ development_status:
 
   epic-9: in-progress  # NOL-9
   9-1-countdown-to-next-change: ready-for-testing  # NOL-39
-  9-2-keep-countdown-on-lock-screen: backlog  # NOL-43
+  9-2-keep-countdown-on-lock-screen: review  # NOL-43
   epic-9-retrospective: optional
 
   epic-10: backlog  # NOL-45 (Apple Watch)

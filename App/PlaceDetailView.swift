@@ -55,7 +55,7 @@ struct PlaceDetailView: View {
         .sheet(isPresented: $showingSettings) { PlaceSettingsView(placeID: placeID) }
         .sheet(isPresented: $showingComparison) { SourceComparisonView(placeID: placeID) }
         .sheet(isPresented: $showingStatistics) { StatisticsView(placeID: placeID) }
-        .task { liveActivityRunning = LiveActivityManager.isRunning(for: placeID) }
+        .task { liveActivityRunning = LiveActivityManager.isKept(placeID) || LiveActivityManager.isRunning(for: placeID) }
         .alert("Не вдалося запустити відлік", isPresented: Binding(get: { liveActivityError != nil },
                                                                   set: { if !$0 { liveActivityError = nil } })) {
             Button("OK", role: .cancel) {}
@@ -189,7 +189,7 @@ struct PlaceDetailView: View {
 extension PlaceDetailView {
     /// Запускає або зупиняє Live Activity (NOL-39). Після 8 год iOS завершує її — запуск знову через це ж меню.
     fileprivate func toggleLiveActivity(_ place: Place) async {
-        if LiveActivityManager.isRunning(for: place.id) {
+        if LiveActivityManager.isKept(place.id) || LiveActivityManager.isRunning(for: place.id) {
             await LiveActivityManager.stop(placeID: place.id)
             liveActivityRunning = false
             return
