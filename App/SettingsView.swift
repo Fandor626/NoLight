@@ -103,6 +103,20 @@ struct SettingsView: View {
                 }
 
                 Section("Про застосунок") {
+                    HStack(spacing: 14) {
+                        Image("Logo")
+                            .resizable().scaledToFit()
+                            .frame(width: 28, height: 44)
+                            .padding(10)
+                            .background(Color(red: 0.13, green: 0.20, blue: 0.36),
+                                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("NoLight").font(.title3.weight(.bold))
+                            Text("Графіки відключень світла").font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
                     LabeledContent("Версія", value: AppVersion.display)
                     Text("Неофіційний застосунок, не пов’язаний з АТ «Черкасиобленерго». Завжди звіряйтеся з офіційними повідомленнями.")
                         .font(.footnote).foregroundStyle(.secondary)
