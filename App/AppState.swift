@@ -11,6 +11,8 @@ final class AppState {
     private(set) var snapshot: ScheduleSnapshot?
     private(set) var isRefreshing = false
     private(set) var lastError: ScheduleError?
+    /// Місце, яке треба відкрити (посилання з віджета). Скидається після відкриття.
+    var openedPlaceID: UUID?
 
     @ObservationIgnored private let repository: ScheduleRepository
     @ObservationIgnored private let placeStore: PlaceStore

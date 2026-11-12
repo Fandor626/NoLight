@@ -40,6 +40,9 @@ targets:
         CFBundleDisplayName: NoLight
         CFBundleDevelopmentRegion: uk
         AppGroupIdentifier: $(APP_GROUP_ID)
+        CFBundleURLTypes:
+          - CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
+            CFBundleURLSchemes: [nolight]
         UILaunchScreen: {}
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers:
