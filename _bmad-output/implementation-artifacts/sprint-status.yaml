@@ -52,7 +52,7 @@ development_status:
 
   epic-6: in-progress  # NOL-6
   6-1-place-in-widget: review  # NOL-30
-  6-2-widget-states: backlog  # NOL-31
+  6-2-widget-states: review  # NOL-31
   6-3-widgets-mirror-place-cards: backlog  # NOL-40
   epic-6-retrospective: optional
 
