@@ -204,6 +204,7 @@ final class AppState {
     private func save() {
         placeStore.places = places
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.send(places: places)
         Task { await replanNotifications() }
     }
 
