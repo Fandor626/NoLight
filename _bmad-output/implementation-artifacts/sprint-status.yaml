@@ -36,7 +36,7 @@ development_status:
   3-3-warning-before-outage: review  # NOL-21
   3-4-warning-before-power-returns: review  # NOL-22
   3-5-schedule-change-notification: review  # NOL-23
-  3-6-schedule-change-history: backlog  # NOL-24
+  3-6-schedule-change-history: review  # NOL-24
   epic-3-retrospective: optional
 
   epic-4: backlog  # NOL-4

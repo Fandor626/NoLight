@@ -12,6 +12,8 @@ final class AppState {
     private(set) var snapshots: [ScheduleSourceKey: ScheduleSnapshot] = [:]
     private(set) var errors: [ScheduleSourceKey: ScheduleError] = [:]
     private(set) var isRefreshing = false
+    /// Історія змін графіка всіх місць (NOL-24).
+    private(set) var changeHistory: [ScheduleChange] = ScheduleChangeHistoryStore.shared.changes
     /// Місце, яке треба відкрити (посилання з віджета). Скидається після відкриття.
     var openedPlaceID: UUID?
 
@@ -99,6 +101,7 @@ final class AppState {
         // Зміни графіка (NOL-23) — до перепланування попереджень.
         let snaps = snapshots
         await ScheduleChangeNotifier.process(places: places, snapshot: { snaps[$0.sourceKey] })
+        changeHistory = ScheduleChangeHistoryStore.shared.changes
         await replanNotifications()
     }
 
