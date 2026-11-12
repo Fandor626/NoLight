@@ -6,9 +6,14 @@ import WidgetKit
 enum BackgroundRefresh {
     static var identifier: String { (Bundle.main.bundleIdentifier ?? "com.example.NoLight") + ".refresh" }
 
-    static func schedule() {
+    /// Реєструє наступне фонове оновлення за налаштуваннями (NOL-19); у ручному режимі скасовує його.
+    static func schedule(settings: RefreshSettingsStore = .shared) {
+        guard let earliest = settings.nextBackgroundRefresh(after: Date()) else {
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
+            return
+        }
         let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
+        request.earliestBeginDate = earliest
         try? BGTaskScheduler.shared.submit(request)
     }
 

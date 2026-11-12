@@ -58,7 +58,12 @@ struct HomeView: View {
                         Button("Керувати") { showingManage = true }
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button { Task { await state.refresh() } } label: {
+                        if state.isRefreshing { ProgressView() } else { Image(systemName: "arrow.clockwise") }
+                    }
+                    .disabled(state.isRefreshing)
+                    .accessibilityLabel("Оновити")
                     Button { showingAddPlace = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("Додати місце")
                 }
