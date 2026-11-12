@@ -55,3 +55,20 @@ final class RefreshSettingsTests: XCTestCase {
         XCTAssertEqual(store.nextBackgroundRefresh(after: now), now.addingTimeInterval(3600))
     }
 }
+
+final class BackgroundRefreshPolicyTests: XCTestCase {
+    func testBackgroundRefreshOnlyInAutomaticMode() {
+        let suite = "nl-bg-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = RefreshSettingsStore(defaults: defaults)
+        XCTAssertTrue(store.allowsBackgroundRefresh)
+        store.mode = .manual
+        XCTAssertFalse(store.allowsBackgroundRefresh)
+    }
+
+    func testIntervalNoteSaysIOSDoesNotGuaranteeTiming() {
+        XCTAssertTrue(RefreshCopy.intervalNote.contains("iOS"))
+        XCTAssertTrue(RefreshCopy.intervalNote.contains("побажання"))
+    }
+}

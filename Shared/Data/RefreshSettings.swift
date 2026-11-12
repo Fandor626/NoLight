@@ -27,6 +27,11 @@ enum RefreshInterval: Int, CaseIterable, Sendable {
 }
 
 /// Налаштування оновлення в App Group (спільні для застосунку й фонового завдання).
+/// Пояснення біля інтервалу: iOS не гарантує точний час фонового оновлення (PRD FR-18).
+enum RefreshCopy {
+    static let intervalNote = "Це побажання, а не розклад: iOS сама вирішує, коли запускати фонове оновлення, тож воно може статися пізніше або рідше."
+}
+
 final class RefreshSettingsStore: @unchecked Sendable {
     private let defaults: UserDefaults
     static let modeKey = "refreshMode.v1"
@@ -47,6 +52,9 @@ final class RefreshSettingsStore: @unchecked Sendable {
         get { RefreshInterval(rawValue: defaults.integer(forKey: Self.intervalKey)) ?? .default }
         set { defaults.set(newValue.rawValue, forKey: Self.intervalKey) }
     }
+
+    /// Чи можна оновлювати дані у фоновому завданні (NOL-20): лише в автоматичному режимі.
+    var allowsBackgroundRefresh: Bool { mode == .automatic }
 
     /// Коли найраніше запускати наступне фонове оновлення; nil — у ручному режимі (не реєструвати).
     func nextBackgroundRefresh(after now: Date) -> Date? {
