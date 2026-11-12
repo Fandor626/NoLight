@@ -47,7 +47,7 @@ development_status:
 
   epic-5: in-progress  # NOL-5
   5-1-preview-without-saving: review  # NOL-28
-  5-2-state-at-arrival-time: backlog  # NOL-29
+  5-2-state-at-arrival-time: review  # NOL-29
   epic-5-retrospective: optional
 
   epic-6: in-progress  # NOL-6

@@ -11,7 +11,20 @@ struct TravelView: View {
     @State private var now = Date.now
     private let tick = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
+    // Приїзд (NOL-29)
+    @State private var arrivalMode = ArrivalMode.duration
+    @State private var arrivalTime = Date.now.addingTimeInterval(3600)
+    @State private var durationMinutes = 60
+
     enum DayChoice: Hashable { case today, tomorrow }
+    enum ArrivalMode: Hashable { case time, duration }
+
+    private var arrivalInput: ArrivalInput {
+        switch arrivalMode {
+        case .time: return .time(minute: KyivTime.minutes(of: arrivalTime))
+        case .duration: return .duration(minutes: durationMinutes)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -85,6 +98,38 @@ struct TravelView: View {
             .padding(.vertical, 4)
         } header: {
             Text("Зараз")
+        }
+
+        let forecast = ArrivalCalculator.forecast(snapshot: state.snapshot(forKey: key), subgroup: place.subgroup,
+                                                  now: now, input: arrivalInput)
+        Section {
+            Picker("Як задати", selection: $arrivalMode) {
+                Text("Час приїзду").tag(ArrivalMode.time)
+                Text("Тривалість поїздки").tag(ArrivalMode.duration)
+            }
+            .pickerStyle(.segmented)
+            switch arrivalMode {
+            case .time:
+                DatePicker("Приїду о", selection: $arrivalTime, displayedComponents: .hourAndMinute)
+                    .environment(\.timeZone, KyivTime.timeZone)
+            case .duration:
+                Stepper(value: $durationMinutes, in: 15...ArrivalCalculator.maxDurationMinutes, step: 15) {
+                    LabeledContent("В дорозі", value: TravelFormat.duration(durationMinutes))
+                }
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(forecast.arrivalText(now: now)).font(.subheadline).foregroundStyle(.secondary)
+                Text(forecast.headline)
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .foregroundStyle(forecast.status.state.textColor)
+                if let detail = forecast.detail(now: now) {
+                    Text(detail).font(.subheadline).foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 2)
+            .accessibilityElement(children: .combine)
+        } header: {
+            Text("Коли приїдете")
         }
 
         Section {
